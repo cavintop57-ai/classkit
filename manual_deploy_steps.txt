@@ -1,0 +1,77 @@
+========================================
+🚀 Cloudways 수동 배포 명령어
+========================================
+
+복사해서 SSH에서 한 줄씩 실행하세요!
+
+========================================
+1단계: SSH 접속
+========================================
+
+ssh master_xhbedwcksw@167.172.70.163
+비밀번호: QVvvNXGAaSd9
+
+
+========================================
+2단계: 아래 명령어들을 하나씩 복사-붙여넣기
+========================================
+
+# 디렉터리 생성
+mkdir -p ~/applications/classkit/{public_html,logs}
+
+# 코드 다운로드 (YOUR_USERNAME 변경!)
+cd ~/applications/classkit/public_html
+git clone https://github.com/YOUR_USERNAME/classkit.git .
+
+# Python 가상환경
+cd backend
+python3.11 -m venv venv
+source venv/bin/activate
+
+# 패키지 설치
+pip install -r requirements.txt
+
+# DB 초기화
+python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())"
+
+# Supervisor 설정
+sudo nano /etc/supervisor/conf.d/classkit.conf
+
+
+========================================
+3단계: Supervisor 설정 파일 내용 (붙여넣기)
+========================================
+
+[program:classkit]
+command=/home/master_xhbedwcksw/applications/classkit/public_html/backend/venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+directory=/home/master_xhbedwcksw/applications/classkit/public_html/backend
+user=master_xhbedwcksw
+autostart=true
+autorestart=true
+stderr_logfile=/home/master_xhbedwcksw/applications/classkit/logs/error.log
+stdout_logfile=/home/master_xhbedwcksw/applications/classkit/logs/access.log
+
+(붙여넣기 후: Ctrl+O, Enter, Ctrl+X로 저장)
+
+
+========================================
+4단계: 서비스 시작
+========================================
+
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start classkit
+
+# 상태 확인
+sudo supervisorctl status classkit
+
+# Health check
+curl http://localhost:8000/health
+
+
+========================================
+✅ 완료!
+========================================
+
+접속: http://167.172.70.163:8000
+

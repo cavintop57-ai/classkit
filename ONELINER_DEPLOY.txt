@@ -1,0 +1,94 @@
+========================================
+⚡ Cloudways 원라이너 배포 (타임아웃 방지!)
+========================================
+
+SSH 접속 정보:
+  ssh master_xhbedwcksw@167.172.70.163
+  비밀번호: QVvvNXGAaSd9
+
+
+========================================
+🚀 단계별 배포 (복사-붙여넣기)
+========================================
+
+1단계: SSH 접속
+----------------------------------------
+ssh master_xhbedwcksw@167.172.70.163
+
+
+2단계: 아래 명령어 전체 복사 → 붙여넣기 (한 번에!)
+----------------------------------------
+
+cd ~ && mkdir -p classkit && cd classkit && git clone https://github.com/YOUR_USERNAME/classkit.git . && cd backend && python3.11 -m venv venv && source venv/bin/activate && pip install -q -r requirements.txt && python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())" && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+
+(주의: YOUR_USERNAME을 실제 GitHub 아이디로 변경!)
+
+
+3단계: 프로세스 확인
+----------------------------------------
+ps aux | grep uvicorn
+
+
+4단계: Health Check
+----------------------------------------
+curl http://localhost:8000/health
+
+
+========================================
+✅ 배포 완료!
+========================================
+
+접속 URL: http://167.172.70.163:8000
+
+
+========================================
+🔄 업데이트 (원라이너)
+========================================
+
+ssh master_xhbedwcksw@167.172.70.163
+
+cd ~/classkit && git pull && pkill -f uvicorn && source backend/venv/bin/activate && cd backend && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+
+
+========================================
+📊 관리 명령어
+========================================
+
+# 서비스 상태
+ps aux | grep uvicorn
+
+# 로그 확인
+tail -f ~/classkit.log
+
+# 서비스 중지
+pkill -f uvicorn
+
+# 서비스 재시작
+cd ~/classkit/backend && source venv/bin/activate && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+
+
+========================================
+🎯 위젯 설정
+========================================
+
+widget/src/main.js 수정:
+
+const API_BASE = 'http://167.172.70.163:8000/api';
+const WS_BASE = 'ws://167.172.70.163:8000';
+
+
+========================================
+💡 팁: Screen 사용 (타임아웃 완전 방지)
+========================================
+
+# Screen 세션 시작
+screen -S classkit
+
+# 배포 명령어 실행 (위 원라이너)
+
+# Detach (서버 접속 끊어도 계속 실행)
+Ctrl+A, D
+
+# 다시 연결
+screen -r classkit
+
