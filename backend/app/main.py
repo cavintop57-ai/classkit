@@ -35,6 +35,26 @@ app.include_router(sessions.router, prefix="/api")
 app.include_router(messages.router, prefix="/api")
 app.include_router(problems.router, prefix="/api")
 
+# Health check 엔드포인트 (최우선)
+@app.get("/health")
+async def health_check():
+    try:
+        # DB 연결 확인
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        return {
+            "status": "healthy", 
+            "version": "0.4.0",
+            "database": "connected"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "version": "0.4.0",
+            "database": "disconnected",
+            "error": str(e)
+        }
+
 # 모바일 PWA 정적 파일 서빙
 mobile_path = Path(__file__).parent.parent.parent / "mobile"
 if mobile_path.exists():
@@ -55,25 +75,6 @@ if mobile_path.exists():
         # API 경로가 아니면 404
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Not found")
-
-@app.get("/health")
-async def health_check():
-    try:
-        # DB 연결 확인
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-        return {
-            "status": "healthy", 
-            "version": "0.4.0",
-            "database": "connected"
-        }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "version": "0.4.0",
-            "database": "disconnected",
-            "error": str(e)
-        }
 
 if __name__ == "__main__":
     import uvicorn
