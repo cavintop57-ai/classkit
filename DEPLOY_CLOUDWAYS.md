@@ -43,9 +43,9 @@ deploy.bat
 
 | 서비스 | URL |
 |--------|-----|
-| **모바일 앱** | http://167.172.70.163:8000 |
-| **API** | http://167.172.70.163:8000/api |
-| **Health Check** | http://167.172.70.163:8000/health |
+| **모바일 앱** | https://phpstack-1293143-5917982.cloudwaysapps.com |
+| **API** | https://phpstack-1293143-5917982.cloudwaysapps.com/api |
+| **Health Check** | https://phpstack-1293143-5917982.cloudwaysapps.com/health |
 
 ---
 
@@ -54,8 +54,8 @@ deploy.bat
 `widget/src/main.js` 파일 (10-11번째 줄):
 
 ```javascript
-const API_BASE = 'http://167.172.70.163:8000/api';
-const WS_BASE = 'ws://167.172.70.163:8000';
+const API_BASE = 'https://phpstack-1293143-5917982.cloudwaysapps.com/api';
+const WS_BASE = 'wss://phpstack-1293143-5917982.cloudwaysapps.com';
 ```
 
 위젯 실행:

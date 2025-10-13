@@ -276,8 +276,8 @@ function stopRenderLoop() {
 }
 
 // API 설정
-const API_BASE = 'http://localhost:8000/api';
-const WS_BASE = 'ws://localhost:8000';
+const API_BASE = 'https://phpstack-1293143-5917982.cloudwaysapps.com/api';
+const WS_BASE = 'wss://phpstack-1293143-5917982.cloudwaysapps.com';
 
 // 세션 관리
 let currentSession = null;
