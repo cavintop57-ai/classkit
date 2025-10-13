@@ -1,12 +1,17 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# DB 파일 경로를 절대 경로로 설정
+DB_DIR = Path(__file__).parent
+DB_PATH = DB_DIR / "classkit.db"
+
 # 기본값: SQLite (PostgreSQL 설치 불필요)
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./classkit.db")
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{DB_PATH}")
 
 # Async engine (SQLite는 pool 옵션 불필요)
 if "sqlite" in DATABASE_URL:
