@@ -9,26 +9,14 @@
 
 
 ========================================
-1단계: GitHub 레포 생성
+1단계: GitHub 확인
 ========================================
 
-https://github.com/new
-- 이름: classkit
-- Public 선택 ✅
-- Create repository
+✅ 레포 생성됨: https://github.com/cavintop57-ai/classkit
 
 
 ========================================
-2단계: GitHub 푸시
-========================================
-
-git remote add origin https://github.com/cavintop57-ai/classkit.git
-git branch -M main
-git push -u origin main
-
-
-========================================
-3단계: SSH 접속
+2단계: SSH 접속
 ========================================
 
 ssh master_xhbedwcksw@167.172.70.163
@@ -37,10 +25,17 @@ ssh master_xhbedwcksw@167.172.70.163
 
 
 ========================================
-4단계: 원라이너 배포 (전체 복사 → 붙여넣기!)
+3단계: 최초 클론 (처음 한 번만)
 ========================================
 
-cd ~ && rm -rf classkit && git clone https://github.com/cavintop57-ai/classkit.git classkit && cd classkit/backend && python3.11 -m venv venv && source venv/bin/activate && pip install -q -r requirements.txt && python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())" && pkill -f uvicorn 2>/dev/null ; nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+cd ~ && git clone https://github.com/cavintop57-ai/classkit.git
+
+
+========================================
+4단계: 배포 (전체 복사 → 붙여넣기!)
+========================================
+
+cd ~/classkit && git pull origin main && python3 -m pip install --user -r backend/requirements.txt && cd ~/classkit/backend && python3 -m app.init_db && pkill -f uvicorn || true && cd ~/classkit/backend && nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 & disown && sleep 3 && curl http://localhost:8000/health
 
 
 ========================================

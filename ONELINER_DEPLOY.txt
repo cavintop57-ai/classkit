@@ -19,7 +19,7 @@ ssh master_xhbedwcksw@167.172.70.163
 2단계: 아래 명령어 전체 복사 → 붙여넣기 (한 번에!)
 ----------------------------------------
 
-cd ~ && rm -rf classkit && git clone https://github.com/cavintop57-ai/classkit.git classkit && cd classkit/backend && python3.11 -m venv venv && source venv/bin/activate && pip install -q -r requirements.txt && python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())" && pkill -f uvicorn 2>/dev/null ; nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+cd ~/classkit && git pull origin main && python3 -m pip install --user -r backend/requirements.txt && cd ~/classkit/backend && python3 -m app.init_db && pkill -f uvicorn || true && cd ~/classkit/backend && nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 & disown && sleep 3 && curl http://localhost:8000/health
 
 
 3단계: 프로세스 확인
@@ -45,7 +45,7 @@ curl http://localhost:8000/health
 
 ssh master_xhbedwcksw@167.172.70.163
 
-cd ~/classkit && git pull && pkill -f uvicorn 2>/dev/null ; cd backend && source venv/bin/activate && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+cd ~/classkit && git pull origin main && python3 -m pip install --user -r backend/requirements.txt && pkill -f uvicorn || true && cd ~/classkit/backend && nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 & disown && sleep 3 && curl http://localhost:8000/health
 
 
 ========================================

@@ -29,7 +29,7 @@ echo   ssh master_xhbedwcksw@167.172.70.163
 echo   비밀번호: Q1w2e3r4!@
 echo.
 echo 업데이트 명령어 (클립보드에 복사됨):
-set "update_cmd=cd ~/classkit && git pull && pkill -f uvicorn && cd backend && source venv/bin/activate && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &"
+set "update_cmd=cd ~/classkit && git pull origin main && python3 -m pip install --user -r backend/requirements.txt && pkill -f uvicorn || true && cd ~/classkit/backend && nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 & disown && sleep 3 && curl http://localhost:8000/health"
 echo %update_cmd% | clip
 echo.
 echo %update_cmd%

@@ -21,6 +21,7 @@ wheels/
 *.egg
 MANIFEST
 venv/
+.venv/
 ENV/
 env/
 
@@ -63,3 +64,8 @@ logs/
 # Cache
 .cache/
 *.cache
+
+# Archives
+*.zip
+*.tar.gz
+*.tgz
