@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>아이콘 생성기</title>
+</head>
+<body>
+  <h2>모바일 앱 아이콘 생성</h2>
+  <canvas id="icon192" width="192" height="192"></canvas>
+  <canvas id="icon512" width="512" height="512"></canvas>
+  <br>
+  <button onclick="downloadIcons()">아이콘 다운로드</button>
+  
+  <script>
+    // 192x192 아이콘 생성
+    const canvas192 = document.getElementById('icon192');
+    const ctx192 = canvas192.getContext('2d');
+    
+    // 배경 (그라디언트)
+    const grad192 = ctx192.createLinearGradient(0, 0, 192, 192);
+    grad192.addColorStop(0, '#667eea');
+    grad192.addColorStop(1, '#764ba2');
+    ctx192.fillStyle = grad192;
+    ctx192.fillRect(0, 0, 192, 192);
+    
+    // 이모지
+    ctx192.font = 'bold 120px Arial';
+    ctx192.textAlign = 'center';
+    ctx192.textBaseline = 'middle';
+    ctx192.fillText('🎓', 96, 96);
+    
+    // 512x512 아이콘 생성
+    const canvas512 = document.getElementById('icon512');
+    const ctx512 = canvas512.getContext('2d');
+    
+    // 배경 (그라디언트)
+    const grad512 = ctx512.createLinearGradient(0, 0, 512, 512);
+    grad512.addColorStop(0, '#667eea');
+    grad512.addColorStop(1, '#764ba2');
+    ctx512.fillStyle = grad512;
+    ctx512.fillRect(0, 0, 512, 512);
+    
+    // 이모지
+    ctx512.font = 'bold 320px Arial';
+    ctx512.textAlign = 'center';
+    ctx512.textBaseline = 'middle';
+    ctx512.fillText('🎓', 256, 256);
+    
+    function downloadIcons() {
+      // 192x192 다운로드
+      canvas192.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'icon-192.png';
+        a.click();
+      });
+      
+      // 512x512 다운로드
+      setTimeout(() => {
+        canvas512.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'icon-512.png';
+          a.click();
+        });
+      }, 500);
+      
+      alert('아이콘 2개를 다운로드합니다.\n다운로드된 파일을 mobile 폴더에 넣어주세요.');
+    }
+  </script>
+</body>
+</html>
+

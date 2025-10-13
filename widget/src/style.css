@@ -1,0 +1,755 @@
+:root {
+  --color-chalkboard: #0d4632;
+  --color-chalk: #f5f5dc;
+  --color-accent: #ffcf00;
+  --font-body: 'Pretendard', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  background: #2d5016; /* 어두운 녹색 배경 */
+  background-image: 
+    /* 상단 숲 */
+    linear-gradient(to bottom, 
+      #1a3a0a 0%, 
+      #2d5016 15%, 
+      #4a7c59 25%,
+      #6b8e23 35%
+    ),
+    /* 중앙 잔디밭 */
+    linear-gradient(to bottom, 
+      #6b8e23 35%, 
+      #8fbc8f 50%, 
+      #9acd32 65%,
+      #6b8e23 85%
+    ),
+    /* 하단 숲 */
+    linear-gradient(to bottom, 
+      #6b8e23 85%, 
+      #4a7c59 95%, 
+      #2d5016 100%
+    ),
+    /* 꽃과 장식 */
+    radial-gradient(circle at 20% 20%, rgba(255, 215, 0, 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 80% 25%, rgba(255, 20, 147, 0.4) 1px, transparent 1px),
+    radial-gradient(circle at 30% 80%, rgba(255, 255, 0, 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 70% 75%, rgba(255, 0, 255, 0.3) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 50px 50px, 30px 30px, 40px 40px, 35px 35px;
+  background-attachment: fixed;
+  color: var(--color-chalk);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+/* 모드 전환 애니메이션 */
+body[data-mode-changing] {
+  animation: mode-transition 0.6s ease;
+}
+
+@keyframes mode-transition {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* 모드 전환 버튼 */
+.mode-controls {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.mode-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 100px;
+}
+
+.mode-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mode-btn.active {
+  background: rgba(255, 207, 0, 0.3);
+  border-color: #ffcf00;
+  box-shadow: 0 0 20px rgba(255, 207, 0, 0.4);
+}
+
+.mode-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.mode-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--color-chalk);
+}
+
+.mode-shortcut {
+  font-size: 11px;
+  color: rgba(245, 245, 220, 0.7);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* 전체화면 버튼 (모드 버튼과 동일한 스타일) */
+.fullscreen-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 100px;
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.fullscreen-btn.active {
+  background: rgba(255, 207, 0, 0.3);
+  border-color: #ffcf00;
+  box-shadow: 0 0 20px rgba(255, 207, 0, 0.4);
+}
+
+.fullscreen-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.fullscreen-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--color-chalk);
+}
+
+.fullscreen-shortcut {
+  font-size: 11px;
+  color: rgba(245, 245, 220, 0.7);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* 전체화면 시 버튼 자동 숨김 (마우스 이동 시 나타남) */
+body:fullscreen .mode-controls {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+body:fullscreen .mode-controls:hover,
+body:fullscreen:hover .mode-controls {
+  opacity: 1;
+}
+
+/* 세션 코드 (버튼 형식으로 모드 버튼들과 나란히) */
+.session-code {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 100px;
+}
+
+.session-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.session-label {
+  color: rgba(245, 245, 220, 0.7);
+  font-size: 11px;
+  font-weight: normal;
+}
+
+.session-value {
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--color-chalk);
+  font-family: 'SF Pro Display', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* 세션 코드는 항상 표시 */
+
+/* Canvas (아바타) */
+#avatar-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: transparent;
+}
+
+[data-mode="class"] #avatar-canvas,
+[data-mode="work"] #avatar-canvas {
+  display: none;
+}
+
+/* QR 코드 카드 */
+.qr-card {
+  position: fixed;
+  bottom: 20px;
+  left: 40px;
+  width: 200px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+  padding: 16px;
+  text-align: center;
+}
+
+.qr-header {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 12px;
+}
+
+.qr-code {
+  background: #F8F8F8;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  min-height: 168px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-code img {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.qr-url {
+  font-size: 11px;
+  color: #666666;
+  word-break: break-all;
+}
+
+/* Work 모드에서 QR 숨김 */
+[data-mode="work"] .qr-card {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 타이머 카드 */
+.timer-card {
+  position: fixed;
+  bottom: 20px;
+  right: 40px;
+  width: 280px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.timer-header {
+  background: #FF6B6B;
+  padding: 12px;
+  text-align: center;
+}
+
+.timer-title {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 타이머 조정 영역 */
+.timer-adjust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+  background: #F8F8F8;
+}
+
+.timer-arrow {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.timer-arrow:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+}
+
+.timer-arrow:active {
+  transform: scale(0.95);
+}
+
+.timer-display {
+  font-size: 48px;
+  font-family: 'Segoe UI', 'Roboto', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 300;
+  color: #333333;
+  text-align: center;
+  letter-spacing: 2px;
+  line-height: 1;
+  min-width: 120px;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #FFFFFF;
+}
+
+.timer-btn {
+  flex: 1;
+  background: #FFFFFF;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.timer-btn:hover {
+  background: #F5F5F5;
+  border-color: #BDBDBD;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timer-btn.timer-start {
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.timer-btn.timer-start:hover {
+  background: #E8F5E9;
+  border-color: #4CAF50;
+}
+
+.timer-btn.timer-start.running {
+  border-color: #FFA726;
+  color: #FFA726;
+}
+
+.timer-btn.timer-start.running:hover {
+  background: #FFF3E0;
+}
+
+.timer-btn.timer-reset {
+  border-color: #9E9E9E;
+  color: #9E9E9E;
+}
+
+.timer-btn.timer-reset:hover {
+  background: #FAFAFA;
+  border-color: #757575;
+}
+
+.timer-btn-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.timer-btn-text {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Class 모드: 타이머 카드 확대 & 중앙 배치 */
+[data-mode="class"] .timer-card {
+  top: 50%;
+  left: 50%;
+  bottom: auto;
+  right: auto;
+  transform: translate(-50%, -50%) scale(1.3);
+  width: 350px;
+}
+
+[data-mode="class"] .timer-display {
+  font-size: 72px;
+  padding: 40px 20px;
+}
+
+/* Work 모드: 타이머 축소 */
+[data-mode="work"] .timer-card {
+  opacity: 0.5;
+  transform: scale(0.8);
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E0E0E0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.header-left h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-right .btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.header-right .btn-primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.header-right .btn-primary:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+}
+
+.header-right .btn-secondary {
+  background: #f44336;
+  color: white;
+}
+
+.header-right .btn-secondary:hover {
+  background: #da190b;
+  transform: translateY(-1px);
+}
+
+.header-right .btn-danger {
+  background: #FF5722;
+  color: white;
+}
+
+.header-right .btn-danger:hover {
+  background: #E64A19;
+  transform: translateY(-1px);
+}
+
+.modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  font-size: 20px;
+  color: #FFFFFF;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #FFFFFF;
+  transform: scale(1.1);
+}
+
+/* 카드 모달 스타일 */
+.card-modal-content {
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.card-content {
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.6;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.card-content h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 20px;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+}
+
+.card-content .word-section {
+  background: #e8f4fd;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border-left: 4px solid #3498db;
+}
+
+.card-content .meaning-section {
+  background: #f0f8e8;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border-left: 4px solid #27ae60;
+}
+
+.card-content .example-section {
+  background: #fff8e8;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border-left: 4px solid #f39c12;
+}
+
+.card-content .calendar-info {
+  background: #f3e5f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border-left: 4px solid #9b59b6;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: inherit;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.btn-primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #45A049;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+  background: #F5F5F5;
+  color: #666;
+  border: 1px solid #E0E0E0;
+}
+
+.btn-secondary:hover {
+  background: #EEEEEE;
+  transform: translateY(-1px);
+}
+
+/* 우리반 코드 확대 모달 */
+.code-modal {
+  max-width: 400px;
+}
+
+.code-display {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.code-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.code-value {
+  font-size: 72px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 8px;
+  font-family: 'SF Pro Display', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.code-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* 우리반 코드 버튼 호버 효과 */
+.session-code:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+

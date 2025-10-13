@@ -1,0 +1,44 @@
+{
+  "name": "class-widget",
+  "version": "0.4.0",
+  "main": "electron/main.js",
+  "description": "초등학교 교실용 전자칠판 위젯",
+  "author": "ClassKit Team",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "electron:dev": "set NODE_ENV=development && electron .",
+    "electron:build": "vite build && electron-builder",
+    "build:win": "vite build && electron-builder --win --x64",
+    "dist": "npm run build && npm run electron:build"
+  },
+  "build": {
+    "appId": "kr.school.classkit.widget",
+    "productName": "우리반 위젯",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": ["portable"],
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "우리반 위젯"
+    }
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.13.3",
+    "vite": "^5.0.0"
+  }
+}

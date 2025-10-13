@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>우리반 위젯</title>
+  <link rel="stylesheet" href="./src/style.css">
+  <link rel="stylesheet" href="./src/toonAvatarEditor.css">
+</head>
+<body data-mode="break">
+  <div id="app">
+    <!-- 모드 전환 버튼 -->
+    <div class="mode-controls">
+      <button class="mode-btn active" id="btn-break" data-mode="break">
+        <span class="mode-emoji">🎮</span>
+        <span class="mode-name">쉬는시간</span>
+        <span class="mode-shortcut">F1</span>
+      </button>
+      <button class="mode-btn" id="btn-class" data-mode="class">
+        <span class="mode-emoji">📚</span>
+        <span class="mode-name">수업시간</span>
+        <span class="mode-shortcut">F1</span>
+      </button>
+      <button class="mode-btn" id="btn-work" data-mode="work">
+        <span class="mode-emoji">💼</span>
+        <span class="mode-name">업무</span>
+        <span class="mode-shortcut">F2</span>
+      </button>
+      <button class="mode-btn" id="btn-manage">
+        <span class="mode-emoji">⚙️</span>
+        <span class="mode-name">우리반 관리</span>
+        <span class="mode-shortcut">M</span>
+      </button>
+      <button class="fullscreen-btn" id="btn-fullscreen">
+        <span class="fullscreen-emoji">⛶</span>
+        <span class="fullscreen-name">전체화면</span>
+        <span class="fullscreen-shortcut">F11</span>
+      </button>
+      <div class="session-code" id="session-code-btn">
+        <span class="session-emoji">🏷️</span>
+        <div class="session-label">우리반 코드</div>
+        <div class="session-value" id="session-code">연결 중...</div>
+      </div>
+    </div>
+
+    <!-- 타이머 카드 -->
+    <div class="timer-card" id="timer-card">
+      <div class="timer-header">
+        <span class="timer-title">⏱️ 쉬는시간</span>
+      </div>
+      <div class="timer-adjust">
+        <button class="timer-arrow" id="timer-increase" title="1분 추가">▲</button>
+        <div class="timer-display" id="timer">10:00</div>
+        <button class="timer-arrow" id="timer-decrease" title="1분 감소">▼</button>
+      </div>
+      <div class="timer-controls">
+        <button class="timer-btn timer-start" id="timer-start-btn">
+          <span class="timer-btn-icon">▶️</span>
+          <span class="timer-btn-text">시작하기</span>
+        </button>
+        <button class="timer-btn timer-reset" id="timer-reset-btn">
+          <span class="timer-btn-icon">🔄</span>
+          <span class="timer-btn-text">초기화</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- QR 코드 카드 -->
+    <div class="qr-card" id="qr-card">
+      <div class="qr-header">📱 학생 접속</div>
+      <div class="qr-code" id="qr-code">
+        <!-- QR 코드가 여기에 표시됩니다 -->
+      </div>
+      <div class="qr-url" id="qr-url">연결 중...</div>
+    </div>
+
+    <!-- 아바타 캔버스 -->
+    <canvas id="avatar-canvas"></canvas>
+  </div>
+
+  <!-- 우리반 관리 모달 -->
+  <div class="modal-overlay" id="manage-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="header-left">
+          <h2>⚙️ 우리반 관리</h2>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-danger" id="reset-class">🗑️ 초기화</button>
+          <button class="btn btn-primary" id="save-class">💾 저장</button>
+          <button class="btn btn-secondary" id="cancel-class">❌ 취소</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="school-name">학교 이름</label>
+          <input type="text" id="school-name" placeholder="예: 서울초등학교" value="서울초등학교">
+        </div>
+        <div class="form-group">
+          <label for="grade">학년</label>
+          <input type="number" id="grade" placeholder="예: 3" value="3" min="1" max="6">
+        </div>
+        <div class="form-group">
+          <label for="class-number">반</label>
+          <input type="number" id="class-number" placeholder="예: 2" value="2" min="1" max="20">
+        </div>
+        <div class="form-group">
+          <label for="student-count">학생 수</label>
+          <input type="number" id="student-count" placeholder="예: 25" value="25" min="1" max="50">
+        </div>
+        <div class="form-group">
+          <label for="today-message">오늘의 메시지</label>
+          <textarea id="today-message" rows="3" placeholder="오늘 학생들에게 전하고 싶은 메시지를 입력하세요...">오늘도 화이팅! 💪</textarea>
+        </div>
+        <div class="form-group">
+          <label for="student-names">학생 이름 (줄바꿈으로 구분)</label>
+          <textarea id="student-names" rows="8" placeholder="김철수&#10;이영희&#10;박민수&#10;...">김철수
+이영희
+박민수
+정수현
+최지훈
+한소영
+윤태호
+임다은
+서준혁
+강민지
+오승현
+조은서
+배준호
+신예린
+홍길동
+김민정
+이동훈
+박서연
+정현우
+최수빈
+한지민
+윤성호
+임서준
+강예은
+오민재</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우리반 코드 확대 모달 -->
+  <div class="modal-overlay" id="code-modal">
+    <div class="modal-content code-modal">
+      <div class="modal-header">
+        <h2>🏷️ 우리반 코드</h2>
+        <button class="modal-close" id="code-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="code-display">
+          <div class="code-label">우리반 코드</div>
+          <div class="code-value" id="modal-session-code">A12345</div>
+          <div class="code-description">학생들이 이 코드로 접속할 수 있습니다</div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="copy-code-btn">📋 복사하기</button>
+          <button class="btn btn-secondary" id="close-code-btn">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 카드 확대 모달 -->
+  <div class="modal-overlay" id="card-modal">
+    <div class="modal-content card-modal-content">
+      <div class="modal-header">
+        <div class="header-left">
+          <h2 id="card-modal-title">카드 내용</h2>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-secondary" id="close-card-btn">❌ 닫기</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="card-content" id="card-modal-content">
+          <!-- 카드 내용이 여기에 표시됩니다 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,345 @@
+/* Toon Avatar Editor Styles */
+
+.toon-avatar-editor-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.toon-avatar-editor-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 0;
+  max-width: 900px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.toon-avatar-editor-header {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.toon-avatar-editor-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.toon-avatar-editor-content {
+  display: flex;
+  padding: 30px;
+  gap: 30px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* 프리뷰 영역 */
+.toon-avatar-editor-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+#toon-avatar-preview-canvas {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 100%);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+#toon-avatar-preview-canvas:hover {
+  transform: scale(1.02);
+}
+
+.preview-info {
+  text-align: center;
+  color: white;
+}
+
+.preview-info p {
+  margin: 5px 0;
+  font-size: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#toon-preview-name {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+#toon-preview-type {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* 옵션 영역 */
+.toon-avatar-editor-options {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.option-group {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.option-group label {
+  display: block;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 캐릭터 선택 그리드 */
+.character-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.character-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.character-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.character-btn.selected {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.character-preview {
+  width: 60px;
+  height: 80px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.character-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.character-preview.male-person::before {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+}
+
+.character-preview.female-person::before {
+  background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+}
+
+.character-preview.male-adventurer::before {
+  background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+}
+
+.character-preview.female-adventurer::before {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+}
+
+.character-btn span {
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* 이름 입력 */
+#toon-avatar-name {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+#toon-avatar-name::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+#toon-avatar-name:focus {
+  outline: none;
+  border-color: #FFD700;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* 애니메이션 프리뷰 */
+.animation-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.anim-btn {
+  background: linear-gradient(135deg, #FF6B6B 0%, #EE5A52 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.anim-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.anim-info {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+/* 푸터 */
+.toon-avatar-editor-footer {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px 30px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.save-btn, .cancel-btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+  color: white;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .toon-avatar-editor-container {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .toon-avatar-editor-content {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+  
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .toon-avatar-editor-footer {
+    flex-direction: column;
+  }
+  
+  .save-btn, .cancel-btn {
+    width: 100%;
+  }
+}

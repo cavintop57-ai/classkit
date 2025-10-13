@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#667eea">
+  <title>우리반 위젯 - 학생</title>
+  <link rel="stylesheet" href="/mobile/style.css?v=6">
+  <link rel="manifest" href="/mobile/manifest.json?v=6">
+</head>
+<body>
+  <div id="app">
+    <!-- 세션 입력 화면 -->
+    <div class="screen" id="session-screen">
+      <div class="container">
+        <div class="welcome-box">
+          <div class="emoji-large">🎓</div>
+          <h2>우리 반에 참여하세요!</h2>
+          <p>선생님이 보여주신 <strong>6자리 코드</strong>를 입력하세요</p>
+          <div class="code-format-hint">💡 형식: 알파벳 1자 + 숫자 5자</div>
+        </div>
+        
+        <div class="input-group">
+          <label>우리반 코드</label>
+          <div class="code-input-container">
+            <div class="code-slots">
+              <input class="code-slot-input" id="slot-0" maxlength="1" data-index="0" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+              <input class="code-slot-input" id="slot-1" maxlength="1" data-index="1" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              <input class="code-slot-input" id="slot-2" maxlength="1" data-index="2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              <input class="code-slot-input" id="slot-3" maxlength="1" data-index="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              <input class="code-slot-input" id="slot-4" maxlength="1" data-index="4" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+              <input class="code-slot-input" id="slot-5" maxlength="1" data-index="5" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn btn-primary btn-large" id="join-session-btn">
+          입장하기 🚀
+        </button>
+      </div>
+    </div>
+
+    <!-- 문제 풀이 화면 -->
+    <div class="screen hidden" id="problem-screen">
+      <div class="container">
+        <div class="problem-box">
+          <div class="problem-header">
+            <span class="problem-type" id="problem-type">문제</span>
+            <span class="problem-difficulty" id="problem-difficulty">★★★☆☆</span>
+          </div>
+          
+          <div class="problem-content">
+            <div class="problem-question" id="problem-question">
+              문제를 불러오는 중...
+            </div>
+            <div class="problem-hint" id="problem-hint"></div>
+          </div>
+          
+          <div class="input-group">
+            <label for="answer-input">정답</label>
+            <input 
+              type="text" 
+              id="answer-input" 
+              placeholder="정답을 입력하세요"
+              autocomplete="off"
+            >
+          </div>
+          
+          <button class="btn btn-primary btn-large" id="submit-answer-btn">
+            정답 제출 ✏️
+          </button>
+          
+          <div class="result-message" id="result-message"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 메시지 입력 화면 -->
+    <div class="screen hidden" id="message-screen">
+      <div class="container">
+        <div class="success-box">
+          <div class="emoji-large">🎉</div>
+          <h2>정답입니다!</h2>
+          <p>이제 선생님과 친구들에게 메시지를 보낼 수 있어요</p>
+        </div>
+        
+        <div class="profile-setup">
+          <div class="input-group">
+            <label for="nickname-input">닉네임</label>
+            <input 
+              type="text" 
+              id="nickname-input" 
+              placeholder="이름을 입력하세요"
+              maxlength="20"
+              autocomplete="off"
+            >
+          </div>
+          
+          <div class="input-group">
+            <label>아바타 선택</label>
+            <div class="avatar-picker" id="avatar-picker">
+              <!-- 아바타 8개 표시 -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="input-group">
+          <label for="message-input">메시지</label>
+          <textarea 
+            id="message-input" 
+            placeholder="선생님과 친구들에게 전하고 싶은 말을 써주세요 (최대 200자)"
+            maxlength="200"
+            rows="4"
+          ></textarea>
+          <div class="char-count">
+            <span id="char-count">0</span> / 200
+          </div>
+        </div>
+        
+        <button class="btn btn-primary btn-large" id="send-message-btn">
+          메시지 보내기 💌
+        </button>
+        
+        <div class="result-message" id="message-result"></div>
+      </div>
+    </div>
+
+    <!-- 완료 화면 -->
+    <div class="screen hidden" id="success-screen">
+      <div class="container">
+        <div class="success-box">
+          <div class="emoji-large">✅</div>
+          <h2>메시지를 보냈어요!</h2>
+          <p>전자칠판에서 확인해보세요</p>
+        </div>
+        
+        <button class="btn btn-secondary" id="send-another-btn">
+          다시 메시지 보내기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/mobile/app.js?v=6"></script>
+</body>
+</html>
+

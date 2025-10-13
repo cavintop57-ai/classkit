@@ -1,0 +1,33 @@
+type,grade,difficulty,question,answer,hint,word,meaning,example,example_ko
+vocabulary,3,1,영어 단어: 사과,apple,과일입니다,apple,사과,I like apples.,나는 사과를 좋아해요.
+vocabulary,3,1,영어 단어: 고양이,cat,동물입니다,cat,고양이,The cat is cute.,그 고양이는 귀여워요.
+vocabulary,3,1,영어 단어: 책,book,읽는 것입니다,book,책,Read the book.,책을 읽으세요.
+vocabulary,3,2,영어 단어: 행복한,happy,기분이 좋은,happy,행복한,I am happy today.,나는 오늘 행복해요.
+vocabulary,3,2,영어 단어: 큰,big,크기가 크다,big,큰,The elephant is big.,코끼리는 커요.
+vocabulary,4,2,영어 단어: 아름다운,beautiful,예쁜,beautiful,아름다운,She is beautiful.,그녀는 아름다워요.
+vocabulary,4,2,영어 단어: 친절한,kind,다정한,kind,친절한,He is a kind person.,그는 친절한 사람이에요.
+vocabulary,4,3,영어 단어: 용감한,brave,두려워하지 않는,brave,용감한,Be brave!,용감하세요!
+vocabulary,4,3,영어 단어: 똑똑한,smart,머리가 좋은,smart,똑똑한,You are smart.,너는 똑똑해.
+vocabulary,5,3,영어 단어: 정직한,honest,거짓말하지 않는,honest,정직한,Always be honest.,항상 정직하세요.
+vocabulary,5,3,영어 단어: 부지런한,diligent,열심히 하는,diligent,부지런한,She is a diligent student.,그녀는 부지런한 학생이에요.
+vocabulary,5,4,영어 단어: 창의적인,creative,새로운 것을 만드는,creative,창의적인,Be creative!,창의적이세요!
+vocabulary,5,4,영어 단어: 호기심 많은,curious,궁금해하는,curious,호기심 많은,I am curious about science.,나는 과학에 호기심이 많아요.
+vocabulary,6,4,영어 단어: 책임감 있는,responsible,맡은 일을 잘하는,responsible,책임감 있는,Be a responsible person.,책임감 있는 사람이 되세요.
+vocabulary,6,5,영어 단어: 인내심 있는,patient,참을성 있는,patient,인내심 있는,Be patient with others.,다른 사람들에게 인내심을 가지세요.
+proverb,3,1,속담: 티끌 모아 ______,태산,작은 것도 모으면,,,,,
+proverb,3,2,속담: 백지장도 맞들면 ______,낫다,함께하면,,,,,
+proverb,4,2,속담: 원숭이도 나무에서 ______,떨어진다,실수할 수 있다,,,,,
+proverb,4,3,속담: 소 잃고 ______ 고친다,외양간,늦게 대비한다,,,,,
+proverb,5,3,속담: 천 리 길도 한 ______부터,걸음,시작이 중요하다,,,,,
+proverb,5,3,속담: 낮말은 새가 듣고 밤말은 ______ 듣는다,쥐가,조심해야 한다,,,,,
+proverb,6,4,속담: 공든 탑이 ______랴,무너지,노력은 헛되지 않다,,,,,
+proverb,6,4,속담: 가는 말이 고와야 ______ 말이 곱다,오는,대접받으려면,,,,,
+vocab,3,2,다음 뜻의 단어는? '하늘을 나는 동물',새,날개가 있어요,,,,,
+vocab,3,2,다음 뜻의 단어는? '물에 사는 동물',물고기,지느러미가 있어요,,,,,
+vocab,4,3,다음 뜻의 단어는? '매우 기쁘고 즐거운 마음',행복,웃음이 나요,,,,,
+vocab,4,3,다음 뜻의 단어는? '옳지 못한 일을 보고 느끼는 불쾌한 감정',분노,화가 나는 것,,,,,
+vocab,5,3,다음 뜻의 단어는? '남을 돕고자 하는 마음',배려,친절함,,,,,
+vocab,5,4,다음 뜻의 단어는? '스스로 해야 할 일을 다하는 태도',책임감,맡은 일을 잘함,,,,,
+vocab,6,4,다음 뜻의 단어는? '어려운 상황을 견디고 이겨내는 힘',인내,참을성,,,,,
+vocab,6,5,다음 뜻의 단어는? '새로운 것을 만들어내는 능력',창의력,상상력,,,,,
+

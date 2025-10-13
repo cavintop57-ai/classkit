@@ -1,0 +1,12 @@
+{
+  "name": "교실 위젯 - 학생",
+  "short_name": "교실위젯",
+  "description": "우리 반 학습 위젯에 참여하세요",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": []
+}
+
