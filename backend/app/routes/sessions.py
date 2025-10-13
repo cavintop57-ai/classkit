@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime, timedelta
 import random
 import string
@@ -11,7 +12,7 @@ from ..models import Session as SessionModel, Class as ClassModel, School as Sch
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 class SessionCreate(BaseModel):
-    class_id: str | None = None  # 없으면 자동 생성
+    class_id: Optional[str] = None  # 없으면 자동 생성
 
 class SessionResponse(BaseModel):
     id: str
