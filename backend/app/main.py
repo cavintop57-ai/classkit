@@ -58,14 +58,8 @@ async def health_check():
 # 위젯(교사용) 정적 파일 서빙
 widget_path = Path(__file__).parent.parent.parent / "widget"
 if widget_path.exists():
-    # 위젯 정적 파일 마운트
-    app.mount("/widget", StaticFiles(directory=str(widget_path), html=True), name="widget")
-    
-    # 루트 경로로 위젯(교사용) 서빙
-    @app.get("/")
-    async def serve_widget_root():
-        """루트 경로에서 위젯(교사용) 제공"""
-        return FileResponse(widget_path / "index.html", media_type="text/html")
+    # /widget 경로에도 마운트 (하위 호환성)
+    app.mount("/widget", StaticFiles(directory=str(widget_path), html=True), name="widget_legacy")
 
 # 모바일 PWA 정적 파일 서빙 (학생용)
 mobile_path = Path(__file__).parent.parent.parent / "mobile"
@@ -81,6 +75,10 @@ if mobile_path.exists():
         # API 경로가 아니면 404
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Not found")
+
+# 루트 경로를 위젯(교사용)으로 마운트 - 반드시 마지막에!
+if widget_path.exists():
+    app.mount("/", StaticFiles(directory=str(widget_path), html=True), name="widget")
 
 if __name__ == "__main__":
     import uvicorn
