@@ -55,17 +55,23 @@ async def health_check():
             "error": str(e)
         }
 
-# 모바일 PWA 정적 파일 서빙
+# 위젯(교사용) 정적 파일 서빙
+widget_path = Path(__file__).parent.parent.parent / "widget"
+if widget_path.exists():
+    # 위젯 정적 파일 마운트
+    app.mount("/widget", StaticFiles(directory=str(widget_path), html=True), name="widget")
+    
+    # 루트 경로로 위젯(교사용) 서빙
+    @app.get("/")
+    async def serve_widget_root():
+        """루트 경로에서 위젯(교사용) 제공"""
+        return FileResponse(widget_path / "index.html", media_type="text/html")
+
+# 모바일 PWA 정적 파일 서빙 (학생용)
 mobile_path = Path(__file__).parent.parent.parent / "mobile"
 if mobile_path.exists():
     # 모바일 앱 정적 파일 마운트
     app.mount("/mobile", StaticFiles(directory=str(mobile_path), html=True), name="mobile")
-    
-    # 루트 경로로 모바일 앱 서빙
-    @app.get("/")
-    async def serve_mobile_root():
-        """루트 경로에서 모바일 앱 제공"""
-        return FileResponse(mobile_path / "index.html", media_type="text/html")
     
     @app.get("/{session_code}")
     async def serve_mobile(session_code: str):
