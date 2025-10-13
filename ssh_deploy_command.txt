@@ -1,0 +1,33 @@
+cd /tmp && cat > deploy_classkit.sh << 'DEPLOY_EOF'
+#!/bin/bash
+set -e
+APP_DIR="/home/master_xxx/applications/classkit"
+REPO="https://github.com/cavintop57-ai/classkit"
+mkdir -p ${APP_DIR}/{public_html,logs,conf/supervisor,conf/nginx}
+cd ${APP_DIR}/public_html
+if [ -d ".git" ]; then git pull origin main; else git clone ${REPO} .; fi
+cd backend
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -q --upgrade pip
+pip install -q -r requirements.txt
+python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables(^)^)"
+cat > ${APP_DIR}/conf/supervisor/classkit.conf << 'SUPEOF'
+[program:classkit]
+command=/home/master_xxx/applications/classkit/public_html/backend/venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+directory=/home/master_xxx/applications/classkit/public_html/backend
+user=master_xxx
+autostart=true
+autorestart=true
+stderr_logfile=/home/master_xxx/applications/classkit/logs/classkit.err.log
+stdout_logfile=/home/master_xxx/applications/classkit/logs/classkit.out.log
+SUPEOF
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart classkit
+sudo supervisorctl status classkit
+curl -s http://localhost:8000/health
+echo ""
+echo "✅ 배포 완료! http://167.172.70.163:8000"
+DEPLOY_EOF
+chmod +x deploy_classkit.sh && bash deploy_classkit.sh
