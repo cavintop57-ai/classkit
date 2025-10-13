@@ -284,6 +284,86 @@ let currentSession = null;
 let wsManager = null;
 
 /**
+ * localStorage에서 세션 불러오기
+ */
+function loadSession() {
+  try {
+    const savedSession = localStorage.getItem('currentSession');
+    if (savedSession) {
+      const session = JSON.parse(savedSession);
+      console.log('📂 저장된 세션 발견:', session.code);
+      return session;
+    }
+  } catch (error) {
+    console.error('❌ 세션 로드 오류:', error);
+  }
+  return null;
+}
+
+/**
+ * localStorage에 세션 저장
+ */
+function saveSession(session) {
+  try {
+    localStorage.setItem('currentSession', JSON.stringify(session));
+    console.log('💾 세션 저장:', session.code);
+  } catch (error) {
+    console.error('❌ 세션 저장 오류:', error);
+  }
+}
+
+/**
+ * 세션 검증 (만료 확인)
+ */
+async function validateSession(session) {
+  try {
+    const response = await fetch(`${API_BASE}/sessions/${session.code}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ 세션 유효:', session.code);
+      return true;
+    }
+  } catch (error) {
+    console.error('❌ 세션 검증 오류:', error);
+  }
+  return false;
+}
+
+/**
+ * 세션 초기화 (기존 세션 재사용 또는 새로 생성)
+ */
+async function initSession() {
+  // 1. 저장된 세션 확인
+  const savedSession = loadSession();
+  
+  if (savedSession) {
+    // 2. 세션 유효성 검증
+    const isValid = await validateSession(savedSession);
+    
+    if (isValid) {
+      // 유효한 세션 재사용
+      currentSession = savedSession;
+      console.log('♻️ 기존 세션 재사용:', savedSession.code);
+      
+      // UI 업데이트
+      document.getElementById('session-code').textContent = savedSession.code;
+      updateQRCode(savedSession.qr_url);
+      
+      // WebSocket 연결
+      connectWebSocket(savedSession.code);
+      
+      return savedSession;
+    } else {
+      console.log('⚠️ 저장된 세션이 만료됨, 새 세션 생성');
+      localStorage.removeItem('currentSession');
+    }
+  }
+  
+  // 3. 새 세션 생성
+  return await createSession();
+}
+
+/**
  * 새 세션 생성 (로컬 모드 폴백 지원)
  */
 async function createSession() {
@@ -306,6 +386,9 @@ async function createSession() {
     
     const session = await response.json();
     currentSession = session;
+    
+    // 세션 저장
+    saveSession(session);
     
     console.log('✅ 온라인 세션 생성:', session.code);
     
@@ -441,7 +524,7 @@ function connectWebSocket(sessionCode) {
   const wsUrl = `${WS_BASE}/ws/${sessionCode}`;
   console.log('🔌 WebSocket 연결 중:', wsUrl);
   
-  wsManager = new WebSocketManager(sessionCode, avatarRenderer);
+  wsManager = new WebSocketManager(sessionCode, avatarRenderer, WS_BASE);
   wsManager.connect();
   
   // 연결되면 즉시 문제 로드
@@ -818,8 +901,8 @@ window.addEventListener('resize', () => {
 // 즉시 렌더링 시작 (문제 카드 표시를 위해)
 startRenderLoop();
 
-// 세션 생성 및 WebSocket 연결 (비동기)
-createSession().then(() => {
+// 세션 초기화 (기존 세션 재사용 또는 새로 생성)
+initSession().then(() => {
   // 세션 생성 후 문제 로드
   // WebSocket onopen에서도 loadProblems()를 호출하지만,
   // 로컬 모드일 경우를 위해 여기서도 호출

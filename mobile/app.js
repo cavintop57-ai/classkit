@@ -2,7 +2,21 @@
  * 모바일 PWA - 학생용 앱
  */
 
-const API_BASE = 'http://localhost:8000/api';
+// 환경에 따라 API 주소 자동 설정
+const getApiBase = () => {
+  const hostname = window.location.hostname;
+  
+  // 로컬 개발 환경
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8000/api';
+  }
+  
+  // 프로덕션 환경 (현재 도메인 사용)
+  return `${window.location.protocol}//${window.location.host}/api`;
+};
+
+const API_BASE = getApiBase();
+console.log('🌐 API Base:', API_BASE);
 
 // 상태 관리
 let sessionCode = null;
@@ -519,7 +533,9 @@ async function sendMessage() {
       
       // 위젯 WebSocket에 직접 메시지 전송 시도 (샘플 모드 시뮬레이션)
       try {
-        const ws = new WebSocket(`ws://localhost:8000/ws/${sessionCode}`);
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsHost = window.location.hostname === 'localhost' ? 'localhost:8000' : window.location.host;
+        const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/${sessionCode}`);
         ws.onopen = () => {
           const messageData = {
             event: 'newMessage',

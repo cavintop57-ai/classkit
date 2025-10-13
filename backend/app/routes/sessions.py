@@ -6,6 +6,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 import random
 import string
+import os
 from ..database import get_db
 from ..models import Session as SessionModel, Class as ClassModel, School as SchoolModel
 
@@ -109,13 +110,16 @@ async def create_session(
     
     print(f"✅ 세션 생성 완료: {session.code}")
     
+    # 환경변수에서 도메인 가져오기 (기본값: localhost)
+    domain = os.getenv('DOMAIN_URL', 'http://localhost:8000')
+    
     return SessionResponse(
         id=str(session.id),
         code=session.code,
         class_id=str(session.class_id),
         started_at=session.started_at,
         expires_at=session.expires_at,
-        qr_url=f"http://localhost:8000/{session.code}"  # 로컬 테스트용
+        qr_url=f"{domain}/{session.code}"
     )
 
 @router.get("/{code}")

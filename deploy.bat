@@ -36,7 +36,7 @@ echo [2/3] 배포 명령어 생성
 echo ========================================
 
 REM GitHub URL에서 레포 경로 추출
-set "deploy_cmd=cd ~ && rm -rf classkit && git clone %github_url% classkit && cd classkit/backend && python3.11 -m venv venv && source venv/bin/activate && pip install -q -r requirements.txt && python -c \"from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())\" && pkill -f uvicorn 2>/dev/null ; nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &"
+set "deploy_cmd=cd ~ && rm -rf classkit && git clone %github_url% classkit && cd classkit/backend && python3.11 -m venv venv && source venv/bin/activate && pip install -q -r requirements.txt && python -c \"from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())\" && export DOMAIN_URL='https://phpstack-1293143-5917982.cloudwaysapps.com' && pkill -f uvicorn 2>/dev/null ; nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &"
 
 echo %deploy_cmd% > .cloudways_deploy_cmd.txt
 echo.

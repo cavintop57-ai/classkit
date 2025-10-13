@@ -4,9 +4,10 @@
  */
 
 export class WebSocketManager {
-  constructor(sessionCode, avatarRenderer) {
+  constructor(sessionCode, avatarRenderer, wsBase = 'ws://localhost:8000') {
     this.sessionCode = sessionCode;
     this.avatarRenderer = avatarRenderer;
+    this.wsBase = wsBase;
     this.ws = null;
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
@@ -15,7 +16,7 @@ export class WebSocketManager {
 
   connect() {
     try {
-      const wsUrl = `ws://localhost:8000/ws/${this.sessionCode}`;
+      const wsUrl = `${this.wsBase}/ws/${this.sessionCode}`;
       console.log('🔌 WebSocket 연결 시도:', wsUrl);
       
       this.ws = new WebSocket(wsUrl);
