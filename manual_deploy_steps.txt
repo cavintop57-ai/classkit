@@ -1,77 +1,107 @@
 ========================================
-🚀 Cloudways 수동 배포 명령어
+🚀 Cloudways 수동 배포 (SSH 타임아웃 대비)
 ========================================
 
-복사해서 SSH에서 한 줄씩 실행하세요!
+서버 정보:
+  SSH: master_xhbedwcksw@167.172.70.163
+  비밀번호: Q1w2e3r4!@
+  GitHub: https://github.com/cavintop57-ai/classkit.git
+
 
 ========================================
-1단계: SSH 접속
+1단계: GitHub 레포 생성
+========================================
+
+https://github.com/new
+- 이름: classkit
+- Public 선택 ✅
+- Create repository
+
+
+========================================
+2단계: GitHub 푸시
+========================================
+
+git remote add origin https://github.com/cavintop57-ai/classkit.git
+git branch -M main
+git push -u origin main
+
+
+========================================
+3단계: SSH 접속
 ========================================
 
 ssh master_xhbedwcksw@167.172.70.163
-비밀번호: QVvvNXGAaSd9
+
+비밀번호: Q1w2e3r4!@
 
 
 ========================================
-2단계: 아래 명령어들을 하나씩 복사-붙여넣기
+4단계: 원라이너 배포 (전체 복사 → 붙여넣기!)
 ========================================
 
-# 디렉터리 생성
-mkdir -p ~/applications/classkit/{public_html,logs}
-
-# 코드 다운로드 (YOUR_USERNAME 변경!)
-cd ~/applications/classkit/public_html
-git clone https://github.com/YOUR_USERNAME/classkit.git .
-
-# Python 가상환경
-cd backend
-python3.11 -m venv venv
-source venv/bin/activate
-
-# 패키지 설치
-pip install -r requirements.txt
-
-# DB 초기화
-python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())"
-
-# Supervisor 설정
-sudo nano /etc/supervisor/conf.d/classkit.conf
+cd ~ && rm -rf classkit && git clone https://github.com/cavintop57-ai/classkit.git classkit && cd classkit/backend && python3.11 -m venv venv && source venv/bin/activate && pip install -q -r requirements.txt && python -c "from app.init_db import create_tables; import asyncio; asyncio.run(create_tables())" && pkill -f uvicorn 2>/dev/null ; nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
 
 
 ========================================
-3단계: Supervisor 설정 파일 내용 (붙여넣기)
+5단계: 확인
 ========================================
 
-[program:classkit]
-command=/home/master_xhbedwcksw/applications/classkit/public_html/backend/venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-directory=/home/master_xhbedwcksw/applications/classkit/public_html/backend
-user=master_xhbedwcksw
-autostart=true
-autorestart=true
-stderr_logfile=/home/master_xhbedwcksw/applications/classkit/logs/error.log
-stdout_logfile=/home/master_xhbedwcksw/applications/classkit/logs/access.log
-
-(붙여넣기 후: Ctrl+O, Enter, Ctrl+X로 저장)
-
-
-========================================
-4단계: 서비스 시작
-========================================
-
-sudo supervisorctl reread
-sudo supervisorctl update
-sudo supervisorctl start classkit
-
-# 상태 확인
-sudo supervisorctl status classkit
+# 프로세스 확인
+ps aux | grep uvicorn
 
 # Health check
 curl http://localhost:8000/health
 
+# 로그 확인
+tail -20 ~/classkit.log
+
 
 ========================================
-✅ 완료!
+✅ 배포 완료!
 ========================================
 
-접속: http://167.172.70.163:8000
+접속 URL: http://167.172.70.163:8000
 
+
+========================================
+🎯 위젯 설정
+========================================
+
+widget/src/main.js 수정:
+
+const API_BASE = 'http://167.172.70.163:8000/api';
+const WS_BASE = 'ws://167.172.70.163:8000';
+
+
+========================================
+🔄 업데이트 (나중에)
+========================================
+
+# GitHub 푸시
+git add .
+git commit -m "✨ Update"
+git push
+
+# SSH 접속
+ssh master_xhbedwcksw@167.172.70.163
+
+# 원라이너 업데이트
+cd ~/classkit && git pull && pkill -f uvicorn && cd backend && source venv/bin/activate && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+
+
+========================================
+📊 관리 명령어
+========================================
+
+# 서비스 상태
+ps aux | grep uvicorn
+
+# 로그 실시간
+tail -f ~/classkit.log
+
+# 서비스 중지
+pkill -f uvicorn
+
+# 포트 확인
+netstat -tlnp | grep 8000
