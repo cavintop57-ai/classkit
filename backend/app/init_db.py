@@ -1,6 +1,7 @@
 import asyncio
 from sqlalchemy import text
 from .database import engine, Base
+from . import models  # models를 import해야 Base.metadata에 테이블 정보가 등록됨
 
 async def create_tables():
     """데이터베이스 테이블 생성"""
