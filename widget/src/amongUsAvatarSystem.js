@@ -342,6 +342,11 @@ export class AmongUsAvatarRenderer {
      * 텍스트를 최대 폭에 맞게 여러 줄로 나누기 (한글/영어 자동 처리)
      */
     wrapText(text, maxWidth, fontSize) {
+        // undefined 또는 null 체크
+        if (!text) {
+            return [''];
+        }
+        
         this.ctx.font = `bold ${fontSize}px Arial`;
         
         const lines = [];
