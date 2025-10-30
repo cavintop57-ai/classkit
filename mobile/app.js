@@ -535,52 +535,12 @@ async function sendMessage() {
   btn.innerHTML = '<span class="loading"></span> 전송 중...';
   
   try {
-    // 샘플 모드인 경우 (answerToken이 'sample-token-'으로 시작)
+    // 샘플 모드 로깅
     if (answerToken && answerToken.startsWith('sample-token-')) {
-      console.log('📝 샘플 모드 메시지 전송 (로컬):', { nickname, content });
-      
-      // 위젯 WebSocket에 직접 메시지 전송 시도 (샘플 모드 시뮬레이션)
-      try {
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsHost = window.location.hostname === 'localhost' ? 'localhost:8000' : window.location.host;
-        const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/${sessionCode}`);
-        ws.onopen = () => {
-          const messageData = {
-            event: 'newMessage',
-            payload: {
-              nickname: nickname,
-              avatar_id: selectedAvatarId,
-              content: content,
-              timestamp: new Date().toISOString()
-            }
-          };
-          ws.send(JSON.stringify(messageData));
-          console.log('📤 위젯으로 메시지 전송:', messageData);
-          
-          // 잠시 후 연결 종료
-          setTimeout(() => ws.close(), 500);
-        };
-      } catch (wsError) {
-        console.warn('⚠️ WebSocket 전송 실패 (위젯이 연결되지 않음):', wsError);
-      }
-      
-      // 로컬에서 바로 성공 처리
-      showResult('message-result', '✅ 메시지가 전송되었습니다!', 'success');
-      
-      // 1초 후 완료 화면으로
-      setTimeout(() => {
-        showScreen('success-screen');
-        
-        // 메시지 필드 초기화
-        messageInput.value = '';
-      }, 1000);
-      
-      btn.disabled = false;
-      btn.innerHTML = '메시지 보내기 💌';
-      return;
+      console.log('📝 샘플 모드 메시지 전송:', { nickname, content, sessionCode });
     }
     
-    // API를 통한 메시지 전송
+    // API를 통한 메시지 전송 (샘플/일반 모두 동일)
     const response = await fetch(`${API_BASE}/messages`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

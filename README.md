@@ -1,6 +1,21 @@
-# 교실 위젯 (Class Widget)
+# 🏫 우리반 위젯 (ClassKit Widget)
 
 초등학교 선생님을 위한 전자칠판 위젯 + 학생용 모바일 앱
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/github/v/release/cavintop57-ai/classkit)](https://github.com/cavintop57-ai/classkit/releases)
+[![Downloads](https://img.shields.io/github/downloads/cavintop57-ai/classkit/total)](https://github.com/cavintop57-ai/classkit/releases)
+
+## 📥 다운로드
+
+### Windows 사용자 (권장)
+**[최신 버전 다운로드 (EXE)](https://github.com/cavintop57-ai/classkit/releases/latest)**
+
+1. `우리반 위젯 Setup.exe` - 설치 프로그램 (권장)
+2. `우리반 위젯.exe` - 설치 없이 실행 (포터블)
+
+### 개발자용
+아래 "빠른 시작" 참고
 
 ## 🚀 빠른 시작
 

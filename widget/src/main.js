@@ -39,12 +39,11 @@ import { WebSocketManager } from './websocket.js';
 })();
 
 // 모드 관리
-let currentMode = 'break'; // 'break' | 'class' | 'work'
+let currentMode = 'widget'; // 'widget' | 'board'
 
 const modeNames = {
-  break: 'Break 모드 (쉬는시간)',
-  class: 'Class 모드 (수업시간)',
-  work: 'Work 모드 (업무)'
+  widget: '우주 위젯 모드',
+  board: '판서 모드'
 };
 
 function setMode(newMode) {
@@ -55,16 +54,6 @@ function setMode(newMode) {
   // 전환 애니메이션
   document.body.dataset.modeChanging = 'true';
   
-  // 타이머 오버레이 닫기 (수업시간 모드가 아닌 경우)
-  const timerCard = document.getElementById('timer-card');
-  const timerBtn = document.getElementById('btn-timer');
-  if (timerCard && newMode !== 'class') {
-    timerCard.classList.remove('show', 'overlay');
-    if (timerBtn) {
-      timerBtn.classList.remove('active');
-    }
-  }
-  
   setTimeout(() => {
     currentMode = newMode;
     document.body.dataset.mode = newMode;
@@ -73,62 +62,33 @@ function setMode(newMode) {
     backgroundSystem.setMode(newMode);
     
     // 버튼 활성화 상태 업데이트
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    
-    // 업무 모드는 별도 버튼, 쉬는시간/수업시간은 통합 버튼
-    if (newMode === 'work') {
-      document.getElementById('btn-work').classList.add('active');
-    } else {
-      // 쉬는시간/수업시간 모드 토글 버튼
-      const btnClassMode = document.getElementById('btn-classmode');
-      if (btnClassMode) {
-        btnClassMode.classList.add('active');
-        // 버튼 텍스트와 이모지 업데이트
-        if (newMode === 'break') {
-          btnClassMode.querySelector('.mode-emoji').textContent = '🎮';
-          btnClassMode.querySelector('.mode-name').textContent = '쉬는시간';
-        } else if (newMode === 'class') {
-          btnClassMode.querySelector('.mode-emoji').textContent = '📚';
-          btnClassMode.querySelector('.mode-name').textContent = '수업시간';
-        }
-      }
+    if (newMode === 'widget') {
+      document.getElementById('btn-widget').classList.add('active');
+    } else if (newMode === 'board') {
+      document.getElementById('btn-board').classList.add('active');
     }
     
     document.body.dataset.modeChanging = 'false';
     
-    // 수업시간 모드로 전환 시 타이머 자동 시작
-    if (newMode === 'class' && !isTimerRunning) {
+    // 판서 모드로 전환 시 타이머 자동 시작
+    if (newMode === 'board' && !isTimerRunning) {
       startTimer();
     }
     
-    // 수업시간 모드에서 나갈 때 타이머 일시정지
-    if (previousMode === 'class' && newMode !== 'class' && isTimerRunning) {
+    // 판서 모드에서 나갈 때 타이머 일시정지
+    if (previousMode === 'board' && newMode !== 'board' && isTimerRunning) {
       pauseTimer();
     }
     
-    // 렌더링 루프 제어
-    if (newMode === 'work') {
-      stopRenderLoop();
-    } else {
-      startRenderLoop(); // break와 class 모드 모두 렌더링
-    }
+    // 렌더링 루프는 항상 실행 (우주 위젯 모드 전용)
+    startRenderLoop();
   }, 300);
 }
 
 function toggleMode(type) {
-  if (type === 'break-class') {
-    setMode(currentMode === 'break' ? 'class' : 'break');
-  } else if (type === 'class-work') {
-    // 업무 모드 전환
-    if (currentMode === 'class') {
-      setMode('work');
-    } else if (currentMode === 'work') {
-      setMode('class');
-    } else {
-      setMode('work');
-    }
+  // widget-board 토글
+  if (type === 'widget-board') {
+    setMode(currentMode === 'widget' ? 'board' : 'widget');
   }
 }
 
@@ -387,21 +347,23 @@ function renderLoop(currentTime) {
   // 1️⃣ 배경 그리기 (레이어 시스템)
   backgroundSystem.draw();
   
-  // 2️⃣ break 모드에서만 배경 & 아바타 업데이트 (12 FPS)
-  if (currentMode === 'break' && currentTime - lastAvatarUpdate >= AVATAR_INTERVAL) {
+  // 2️⃣ 우주 위젯 모드에서만 배경 & 아바타 업데이트 (12 FPS)
+  if (currentMode === 'widget' && currentTime - lastAvatarUpdate >= AVATAR_INTERVAL) {
     lastAvatarUpdate = currentTime;
     backgroundSystem.update(); // 구름 이동
     avatarRenderer.update();
   }
   
-  // 3️⃣ 아바타 그리기 (break와 class 모드 모두)
-  if (currentMode === 'break' || currentMode === 'class') {
+  // 3️⃣ 아바타 그리기 (우주 위젯 모드만)
+  if (currentMode === 'widget') {
     avatarRenderer.draw();
   }
   
-  // 4️⃣ 학습 카드 (break와 class 모드 모두)
-  learningCard.update();
-  learningCard.draw();
+  // 4️⃣ 학습 카드 (우주 위젯 모드만)
+  if (currentMode === 'widget') {
+    learningCard.update();
+    learningCard.draw();
+  }
 }
 
 function startRenderLoop() {
@@ -700,6 +662,99 @@ function generateLocalSessionCode() {
 }
 
 /**
+ * 커스텀 문제 수집
+ */
+function collectCustomProblems() {
+  return [
+    {
+      id: 'custom-1',
+      type: 'vocabulary',
+      word: document.getElementById('problem-1-word').value,
+      meaning: document.getElementById('problem-1-meaning').value,
+      example: document.getElementById('problem-1-example').value,
+      example_ko: document.getElementById('problem-1-example-ko').value,
+      student_question: document.getElementById('problem-1-question').value,
+      student_answer: document.getElementById('problem-1-answer').value,
+      difficulty: 2,
+      grade: '5-1'
+    },
+    {
+      id: 'custom-2',
+      type: 'proverb',
+      question: document.getElementById('problem-2-question').value,
+      answer: document.getElementById('problem-2-answer').value,
+      hint: document.getElementById('problem-2-hint').value,
+      student_question: document.getElementById('problem-2-student-question').value,
+      student_answer: document.getElementById('problem-2-answer').value,
+      difficulty: 2,
+      grade: '5-1'
+    },
+    {
+      id: 'custom-3',
+      type: 'vocab',
+      question: document.getElementById('problem-3-question').value,
+      answer: document.getElementById('problem-3-answer').value,
+      hint: document.getElementById('problem-3-hint').value,
+      student_question: document.getElementById('problem-3-question').value,
+      student_answer: document.getElementById('problem-3-answer').value,
+      difficulty: 2,
+      grade: '5-1'
+    }
+  ];
+}
+
+/**
+ * 커스텀 문제 적용
+ */
+function applyCustomProblems(problems) {
+  if (!problems || problems.length === 0) {
+    return;
+  }
+  
+  console.log('📚 커스텀 문제 적용:', problems);
+  learningCard.setProblems(problems);
+}
+
+/**
+ * 저장된 커스텀 문제 불러오기
+ */
+function loadCustomProblemsToForm(customProblems) {
+  if (!customProblems || customProblems.length === 0) {
+    return;
+  }
+  
+  console.log('📝 커스텀 문제 폼에 로드:', customProblems);
+  
+  // 문제 1: 영어 낱말
+  if (customProblems[0]) {
+    const p1 = customProblems[0];
+    document.getElementById('problem-1-word').value = p1.word || '';
+    document.getElementById('problem-1-meaning').value = p1.meaning || '';
+    document.getElementById('problem-1-example').value = p1.example || '';
+    document.getElementById('problem-1-example-ko').value = p1.example_ko || '';
+    document.getElementById('problem-1-question').value = p1.student_question || '';
+    document.getElementById('problem-1-answer').value = p1.student_answer || '';
+  }
+  
+  // 문제 2: 속담
+  if (customProblems[1]) {
+    const p2 = customProblems[1];
+    document.getElementById('problem-2-question').value = p2.question || '';
+    document.getElementById('problem-2-answer').value = p2.answer || '';
+    document.getElementById('problem-2-hint').value = p2.hint || '';
+    document.getElementById('problem-2-student-question').value = p2.student_question || '';
+  }
+  
+  // 문제 3: 어휘력
+  if (customProblems[2]) {
+    const p3 = customProblems[2];
+    document.getElementById('problem-3-question').value = p3.question || '';
+    document.getElementById('problem-3-answer').value = p3.answer || '';
+    document.getElementById('problem-3-hint').value = p3.hint || '';
+  }
+}
+
+/**
  * 교사 키 생성 (학교명 + 교사명)
  */
 function getTeacherKey() {
@@ -736,6 +791,12 @@ function loadClassData() {
       document.getElementById('student-count').value = classData.studentCount || '25';
       document.getElementById('student-names').value = classData.studentNames || '';
       document.getElementById('today-message').value = classData.todayMessage || '';
+      
+      // 커스텀 문제 폼에 로드
+      if (classData.customProblems) {
+        loadCustomProblemsToForm(classData.customProblems);
+        applyCustomProblems(classData.customProblems);
+      }
       
       // 화면 업데이트
       applyClassData(classData);
@@ -908,23 +969,17 @@ function getDefaultProblem(type, grade) {
 }
 
 // 버튼 클릭 이벤트
-const btnClassMode = document.getElementById('btn-classmode');
-btnClassMode.addEventListener('click', () => {
+document.getElementById('btn-widget').addEventListener('click', () => {
   const currentMode = document.body.getAttribute('data-mode');
-  if (currentMode === 'break') {
-    setMode('class');
-  } else {
-    setMode('break');
+  if (currentMode !== 'widget') {
+    setMode('widget');
   }
 });
 
-document.getElementById('btn-work').addEventListener('click', () => {
+document.getElementById('btn-board').addEventListener('click', () => {
   const currentMode = document.body.getAttribute('data-mode');
-  if (currentMode === 'work') {
-    // 업무 모드에서 다시 클릭하면 쉬는시간 모드로
-    setMode('break');
-  } else {
-    setMode('work');
+  if (currentMode !== 'board') {
+    setMode('board');
   }
 });
 
@@ -1007,6 +1062,9 @@ saveBtn.addEventListener('click', () => {
     return;
   }
   
+  // 커스텀 문제 수집
+  const customProblems = collectCustomProblems();
+  
   const classData = {
     schoolName, 
     grade, 
@@ -1014,6 +1072,7 @@ saveBtn.addEventListener('click', () => {
     studentCount, 
     studentNames, 
     todayMessage,
+    customProblems,  // 커스텀 문제 저장
     savedAt: new Date().toISOString()
   };
   
@@ -1031,6 +1090,9 @@ saveBtn.addEventListener('click', () => {
   
   // 화면 업데이트
   applyClassData(classData);
+  
+  // 커스텀 문제 적용
+  applyCustomProblems(customProblems);
   
   // 시간표 저장
   saveTimetable();
@@ -1050,6 +1112,29 @@ manageModal.addEventListener('click', (e) => {
     manageModal.classList.remove('active');
     document.body.style.overflow = '';
   }
+});
+
+// 문제 기본값으로 리셋
+document.getElementById('reset-problem-1').addEventListener('click', () => {
+  document.getElementById('problem-1-word').value = 'happy';
+  document.getElementById('problem-1-meaning').value = '행복한, 기쁜';
+  document.getElementById('problem-1-example').value = 'I am happy today.';
+  document.getElementById('problem-1-example-ko').value = '나는 오늘 행복해요.';
+  document.getElementById('problem-1-question').value = 'happy의 뜻은?';
+  document.getElementById('problem-1-answer').value = '행복한';
+});
+
+document.getElementById('reset-problem-2').addEventListener('click', () => {
+  document.getElementById('problem-2-question').value = '티끌 모아 ___';
+  document.getElementById('problem-2-answer').value = '태산';
+  document.getElementById('problem-2-hint').value = '작은 것도 모으면 커진다';
+  document.getElementById('problem-2-student-question').value = '티끌 모아 ___ 빈칸에 들어갈 말은?';
+});
+
+document.getElementById('reset-problem-3').addEventListener('click', () => {
+  document.getElementById('problem-3-question').value = '어려운 일을 포기하지 않고 계속하는 마음';
+  document.getElementById('problem-3-answer').value = '끈기';
+  document.getElementById('problem-3-hint').value = '인내심과 관련된 단어';
 });
 
 // 우리반 코드 모달 (UI 삭제됨 - 주석 처리)
@@ -1262,10 +1347,7 @@ if (!window.electron) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'F1') {
       e.preventDefault();
-      toggleMode('break-class');
-    } else if (e.key === 'F2') {
-      e.preventDefault();
-      toggleMode('class-work');
+      toggleMode('widget-board');
     } else if (e.key === 'p' || e.key === 'P') {
       // 테스트: 다음 문제로 변경
       e.preventDefault();
@@ -1400,21 +1482,20 @@ stopwatchLapBtn.addEventListener('click', () => {
 });
 
 // ========================================
-// 판서 도구 기능
+// 판서 도구 기능 (전체 화면 모드)
 // ========================================
 const boardCanvas = document.getElementById('board-canvas');
 const boardCtx = boardCanvas ? boardCanvas.getContext('2d') : null;
+const boardContainer = document.getElementById('board-container');
+const boardTextEditor = document.getElementById('board-text-editor');
+const boardOverlay = document.getElementById('board-overlay');
+const exitBoardBtn = document.getElementById('exit-board-btn');
 
-if (boardCanvas && boardCtx) {
+if (boardCanvas && boardCtx && boardContainer && boardTextEditor) {
   // 캔버스 크기 설정
   function resizeBoardCanvas() {
-    const rect = boardCanvas.getBoundingClientRect();
-    boardCanvas.width = rect.width;
-    boardCanvas.height = rect.height;
-    
-    // 배경색 설정
-    boardCtx.fillStyle = '#2C3E50';
-    boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    boardCanvas.width = window.innerWidth;
+    boardCanvas.height = window.innerHeight - 130;
   }
   
   // 초기 크기 설정
@@ -1422,67 +1503,156 @@ if (boardCanvas && boardCtx) {
   
   // 그리기 상태
   let isDrawing = false;
-  let currentTool = 'pen';
-  let currentColor = '#ffffff';
-  let currentSize = 3;
+  let currentTool = 'text'; // 기본값: 텍스트 모드
+  let currentColor = '#FFFFFF';
+  let textSize = 24;
+  let penSize = 5;
+  let eraserSize = 10;
   let lastX = 0;
   let lastY = 0;
+  let startX = 0;
+  let startY = 0;
+  let textBeingDrawn = '';
   
   // 도구 버튼
+  const textBtn = document.getElementById('text-btn');
   const penBtn = document.getElementById('pen-btn');
   const eraserBtn = document.getElementById('eraser-btn');
   const colorPicker = document.getElementById('color-picker');
-  const sizeSlider = document.getElementById('size-slider');
+  const textSizeSlider = document.getElementById('text-size-slider');
+  const textSizeValue = document.getElementById('text-size-value');
+  const penSizeSlider = document.getElementById('pen-size-slider');
+  const penSizeValue = document.getElementById('pen-size-value');
+  const eraserSizeSlider = document.getElementById('eraser-size-slider');
+  const eraserSizeValue = document.getElementById('eraser-size-value');
+  const textSizeGroup = document.getElementById('text-size-group');
+  const penSizeGroup = document.getElementById('pen-size-group');
+  const eraserSizeGroup = document.getElementById('eraser-size-group');
   const clearBtn = document.getElementById('clear-btn');
   const saveBtn = document.getElementById('save-btn');
   
-  // 도구 선택
-  penBtn.addEventListener('click', () => {
+  // 텍스트 모드 (기본)
+  function setTextMode() {
+    currentTool = 'text';
+    textBtn.classList.add('active');
+    penBtn.classList.remove('active');
+    eraserBtn.classList.remove('active');
+    boardCanvas.classList.remove('active');
+    boardTextEditor.style.pointerEvents = 'auto';
+    boardTextEditor.style.display = 'block'; // 텍스트 에디터 표시
+    textSizeGroup.style.display = 'flex';
+    penSizeGroup.style.display = 'none';
+    eraserSizeGroup.style.display = 'none';
+  }
+  
+  // 펜 모드
+  function setPenMode() {
     currentTool = 'pen';
     penBtn.classList.add('active');
+    textBtn.classList.remove('active');
     eraserBtn.classList.remove('active');
-  });
+    boardCanvas.classList.add('active');
+    boardTextEditor.style.pointerEvents = 'none';
+    boardTextEditor.style.display = 'block'; // 텍스트 에디터는 계속 표시 (배경에)
+    textSizeGroup.style.display = 'none';
+    penSizeGroup.style.display = 'flex';
+    eraserSizeGroup.style.display = 'none';
+  }
   
-  eraserBtn.addEventListener('click', () => {
+  // 지우개 모드
+  function setEraserMode() {
     currentTool = 'eraser';
     eraserBtn.classList.add('active');
+    textBtn.classList.remove('active');
     penBtn.classList.remove('active');
-  });
+    boardCanvas.classList.add('active');
+    boardTextEditor.style.pointerEvents = 'none';
+    boardTextEditor.style.display = 'block'; // 텍스트 에디터는 계속 표시 (배경에)
+    textSizeGroup.style.display = 'none';
+    penSizeGroup.style.display = 'none';
+    eraserSizeGroup.style.display = 'flex';
+  }
   
+  // 도구 선택 이벤트
+  textBtn.addEventListener('click', setTextMode);
+  penBtn.addEventListener('click', setPenMode);
+  eraserBtn.addEventListener('click', setEraserMode);
+  
+  // 색상 변경
   colorPicker.addEventListener('change', (e) => {
     currentColor = e.target.value;
-    currentTool = 'pen';
-    penBtn.classList.add('active');
-    eraserBtn.classList.remove('active');
-  });
-  
-  sizeSlider.addEventListener('input', (e) => {
-    currentSize = parseInt(e.target.value);
-  });
-  
-  clearBtn.addEventListener('click', () => {
-    if (confirm('판서 내용을 모두 지우시겠습니까?')) {
-      boardCtx.fillStyle = '#2C3E50';
-      boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    // 색상 선택 시 펜 모드로 전환
+    if (currentTool === 'text') {
+      setPenMode();
     }
   });
   
-  saveBtn.addEventListener('click', () => {
-    const link = document.createElement('a');
-    link.download = `판서_${new Date().toISOString().slice(0, 10)}.png`;
-    link.href = boardCanvas.toDataURL();
-    link.click();
+  // 글자 크기 변경
+  textSizeSlider.addEventListener('input', (e) => {
+    textSize = parseInt(e.target.value);
+    textSizeValue.textContent = textSize + 'px';
+    boardTextEditor.style.fontSize = textSize + 'px';
   });
   
-  // 그리기 함수
-  function draw(x, y) {
+  // 붓 크기 변경
+  penSizeSlider.addEventListener('input', (e) => {
+    penSize = parseInt(e.target.value);
+    penSizeValue.textContent = penSize + 'px';
+  });
+  
+  // 지우개 크기 변경
+  eraserSizeSlider.addEventListener('input', (e) => {
+    eraserSize = parseInt(e.target.value);
+    eraserSizeValue.textContent = eraserSize + 'px';
+  });
+  
+  // 전체 지우기
+  clearBtn.addEventListener('click', () => {
+    if (confirm('판서 내용을 모두 지우시겠습니까?')) {
+      boardTextEditor.innerHTML = '';
+      boardCtx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+    }
+  });
+  
+  // 이미지 저장
+  saveBtn.addEventListener('click', () => {
+    // 텍스트 에디터와 캔버스를 합쳐서 저장
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = window.innerWidth;
+    finalCanvas.height = window.innerHeight - 130;
+    const finalCtx = finalCanvas.getContext('2d');
+    
+    // 흰색 배경
+    finalCtx.fillStyle = '#FFFFFF';
+    finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+    
+    // 텍스트 내용 (html2canvas 사용하거나 간단히 스크린샷)
+    const link = document.createElement('a');
+    link.download = `판서_${new Date().toISOString().slice(0, 10)}.png`;
+    // 복잡하므로 전체 페이지 스크린샷으로 대체
+    html2canvas(boardContainer, {
+      backgroundColor: '#FFFFFF',
+      useCORS: true
+    }).then(canvas => {
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  });
+  
+  // 판서 모드 종료
+  exitBoardBtn.addEventListener('click', () => {
+    setMode('widget');
+  });
+  
+  // 그리기 함수 (펜 모드)
+  function drawPen(x, y) {
     if (!isDrawing) return;
     
     boardCtx.beginPath();
     boardCtx.moveTo(lastX, lastY);
     boardCtx.lineTo(x, y);
-    boardCtx.strokeStyle = currentTool === 'eraser' ? '#2C3E50' : currentColor;
-    boardCtx.lineWidth = currentTool === 'eraser' ? currentSize * 3 : currentSize;
+    boardCtx.strokeStyle = currentColor;
+    boardCtx.lineWidth = penSize;
     boardCtx.lineCap = 'round';
     boardCtx.lineJoin = 'round';
     boardCtx.stroke();
@@ -1491,18 +1661,59 @@ if (boardCanvas && boardCtx) {
     lastY = y;
   }
   
+  // 지우기 함수 (지우개 모드)
+  function drawEraser(x, y) {
+    if (!isDrawing) return;
+    
+    boardCtx.beginPath();
+    boardCtx.arc(x, y, eraserSize, 0, Math.PI * 2);
+    boardCtx.fillStyle = '#2C3E50';
+    boardCtx.fill();
+    
+    lastX = x;
+    lastY = y;
+  }
+  
+  // 텍스트 입력 (캔버스에)
+  function drawText(x, y) {
+    const input = prompt('텍스트를 입력하세요:');
+    if (input && input.trim()) {
+      boardCtx.font = `${textSize}px 'Noto Sans KR', Arial, sans-serif`;
+      boardCtx.fillStyle = currentColor;
+      boardCtx.textBaseline = 'top';
+      boardCtx.fillText(input.trim(), x, y);
+    }
+  }
+  
   // 마우스 이벤트
   boardCanvas.addEventListener('mousedown', (e) => {
+    if (currentTool === 'text') {
+      // 텍스트 모드는 텍스트 에디터 사용
+      return;
+    }
+    
     isDrawing = true;
-    const rect = boardCanvas.getBoundingClientRect();
-    lastX = e.clientX - rect.left;
-    lastY = e.clientY - rect.top;
+    lastX = e.clientX;
+    lastY = e.clientY - 80; // 툴바 높이만큼 조정
+    
+    // 펜 모드에서 더블클릭 시 텍스트 입력
+    if (currentTool === 'pen' && e.detail === 2) {
+      drawText(lastX, lastY);
+      isDrawing = false;
+    }
   });
   
   boardCanvas.addEventListener('mousemove', (e) => {
     if (!isDrawing) return;
-    const rect = boardCanvas.getBoundingClientRect();
-    draw(e.clientX - rect.left, e.clientY - rect.top);
+    
+    const x = e.clientX;
+    const y = e.clientY - 80;
+    
+    if (currentTool === 'pen') {
+      drawPen(x, y);
+    } else if (currentTool === 'eraser') {
+      drawEraser(x, y);
+    }
   });
   
   boardCanvas.addEventListener('mouseup', () => {
@@ -1515,20 +1726,26 @@ if (boardCanvas && boardCtx) {
   
   // 터치 이벤트
   boardCanvas.addEventListener('touchstart', (e) => {
+    if (currentTool === 'text') return;
     e.preventDefault();
     isDrawing = true;
-    const rect = boardCanvas.getBoundingClientRect();
     const touch = e.touches[0];
-    lastX = touch.clientX - rect.left;
-    lastY = touch.clientY - rect.top;
+    lastX = touch.clientX;
+    lastY = touch.clientY - 80;
   });
   
   boardCanvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
     if (!isDrawing) return;
-    const rect = boardCanvas.getBoundingClientRect();
+    e.preventDefault();
     const touch = e.touches[0];
-    draw(touch.clientX - rect.left, touch.clientY - rect.top);
+    const x = touch.clientX;
+    const y = touch.clientY - 80;
+    
+    if (currentTool === 'pen') {
+      drawPen(x, y);
+    } else if (currentTool === 'eraser') {
+      drawEraser(x, y);
+    }
   });
   
   boardCanvas.addEventListener('touchend', () => {
@@ -1537,13 +1754,13 @@ if (boardCanvas && boardCtx) {
   
   // 윈도우 리사이즈 시 캔버스 크기 조정
   window.addEventListener('resize', () => {
-    if (document.body.getAttribute('data-mode') === 'class') {
+    if (document.body.getAttribute('data-mode') === 'board') {
       resizeBoardCanvas();
     }
   });
   
-  // 초기 도구 설정
-  penBtn.classList.add('active');
+  // 초기 도구 설정 (텍스트 모드)
+  setTextMode();
 }
 
 console.log('✅ 스톱워치 & 판서 도구 초기화 완료');

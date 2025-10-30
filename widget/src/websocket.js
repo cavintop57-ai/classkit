@@ -17,8 +17,8 @@ export class WebSocketManager {
     // 자동 발화 타이머
     this.autoSpeechTimer = null;
     this.lastMessageTime = Date.now();
-    this.AUTO_SPEECH_INTERVAL = 5000; // 5초
-    this.MAX_INTERVAL = 5000; // 5초 (랜덤 범위 동일)
+    this.AUTO_SPEECH_INTERVAL = 10000; // 10초
+    this.MAX_INTERVAL = 10000; // 10초 (랜덤 범위 동일)
     this.activeAvatars = new Set(); // 현재 말풍선이 있는 아바타들
     this.currentSpeakerIndex = 0; // 현재 발화할 아바타 인덱스
   }
@@ -203,7 +203,7 @@ export class WebSocketManager {
       this.generateAndShowSpeech();
     }, this.AUTO_SPEECH_INTERVAL);
     
-    console.log(`⏰ 자동 발화 타이머 시작 (5초 후)`);
+    console.log(`⏰ 자동 발화 타이머 시작 (10초 후)`);
   }
   
   /**
@@ -284,13 +284,13 @@ export class WebSocketManager {
       
       // 선택된 아바타가 발화
       this.activeAvatars.add(nextIndex);
-      this.avatarRenderer.addSpeechBubble(nextIndex, speechText, 5000);
+      this.avatarRenderer.addSpeechBubble(nextIndex, speechText, 9000);
       console.log(`🎭 아바타 ${selectedAvatar.name}에 발화 표시`);
       
-      // 5초 후 activeAvatars에서 제거
+      // 9초 후 activeAvatars에서 제거
       setTimeout(() => {
         this.activeAvatars.delete(nextIndex);
-      }, 5000);
+      }, 9000);
       
       // 타이머 다시 시작
       this.startAutoSpeech();

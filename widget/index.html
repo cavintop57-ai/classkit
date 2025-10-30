@@ -7,19 +7,19 @@
   <link rel="stylesheet" href="./src/style.css">
   <link rel="stylesheet" href="./src/toonAvatarEditor.css">
 </head>
-<body data-mode="break">
+<body data-mode="widget">
   <div id="app">
     <!-- 모드 전환 버튼 -->
     <div class="mode-controls">
-      <button class="mode-btn active" id="btn-classmode" data-mode="break">
-        <span class="mode-emoji">🎮</span>
-        <span class="mode-name">쉬는시간</span>
+      <button class="mode-btn active" id="btn-widget" data-mode="widget">
+        <span class="mode-emoji">🚀</span>
+        <span class="mode-name">우주 위젯</span>
         <span class="mode-shortcut">F1</span>
       </button>
-      <button class="mode-btn" id="btn-work" data-mode="work">
-        <span class="mode-emoji">💼</span>
-        <span class="mode-name">업무</span>
-        <span class="mode-shortcut">F2</span>
+      <button class="mode-btn" id="btn-board" data-mode="board">
+        <span class="mode-emoji">📝</span>
+        <span class="mode-name">판서 모드</span>
+        <span class="mode-shortcut">F1</span>
       </button>
       <button class="mode-btn" id="btn-manage">
         <span class="mode-emoji">⚙️</span>
@@ -107,19 +107,42 @@
     </div>
 
     <!-- 판서 도구 (수업시간 모드) -->
-    <div class="board-card" id="board-card">
-      <div class="board-header">
-        <span class="board-title">✏️ 판서 도구</span>
-        <div class="board-tools">
-          <button class="tool-btn" id="pen-btn" data-tool="pen" title="펜">✏️</button>
-          <button class="tool-btn" id="eraser-btn" data-tool="eraser" title="지우개">🧹</button>
-          <input type="color" id="color-picker" value="#ffffff" title="색상 선택">
-          <input type="range" id="size-slider" min="1" max="20" value="3" title="두께">
+    <div class="board-container" id="board-container">
+      <div class="board-overlay" id="board-overlay"></div>
+      <div class="board-text-editor" id="board-text-editor" contenteditable="true"></div>
+      <canvas id="board-canvas"></canvas>
+      
+      <div class="board-toolbar">
+        <div class="board-tool-group">
+          <button class="tool-btn active" id="text-btn" data-tool="text" title="텍스트 모드">📝</button>
+          <button class="tool-btn" id="pen-btn" data-tool="pen" title="펜 모드">✏️</button>
+          <button class="tool-btn" id="eraser-btn" data-tool="eraser" title="지우개">✂️</button>
+        </div>
+        <div class="board-tool-group">
+          <label>색상:</label>
+          <input type="color" id="color-picker" value="#FFFFFF" title="색상 선택">
+        </div>
+        <div class="board-tool-group" id="text-size-group">
+          <label>글자 크기:</label>
+          <input type="range" id="text-size-slider" min="1" max="100" value="24" title="글자 크기">
+          <span id="text-size-value">24px</span>
+        </div>
+        <div class="board-tool-group" id="pen-size-group" style="display: none;">
+          <label>붓 크기:</label>
+          <input type="range" id="pen-size-slider" min="1" max="50" value="5" title="붓 크기">
+          <span id="pen-size-value">5px</span>
+        </div>
+        <div class="board-tool-group" id="eraser-size-group" style="display: none;">
+          <label>지우개 크기:</label>
+          <input type="range" id="eraser-size-slider" min="1" max="50" value="10" title="지우개 크기">
+          <span id="eraser-size-value">10px</span>
+        </div>
+        <div class="board-tool-group">
           <button class="tool-btn" id="clear-btn" title="전체 지우기">🗑️</button>
           <button class="tool-btn" id="save-btn" title="이미지 저장">💾</button>
+          <button class="tool-btn" id="exit-board-btn" title="판서 모드 종료">❌</button>
         </div>
       </div>
-      <canvas id="board-canvas"></canvas>
     </div>
 
     <!-- 아바타 캔버스 -->
@@ -258,6 +281,94 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+        
+        <!-- 학습 카드 문제 편집 -->
+        <div class="form-group">
+          <label>📚 학습 카드 문제 (3개)</label>
+          <p class="form-hint">위젯에 표시될 문제를 직접 편집할 수 있습니다. 저장하면 학생들에게도 같은 문제가 출제됩니다.</p>
+          
+          <!-- 문제 1: 영어 낱말 -->
+          <div class="problem-editor">
+            <div class="problem-header">
+              <span class="problem-label">1️⃣ 영어 낱말</span>
+              <button type="button" class="btn-small btn-secondary" id="reset-problem-1">기본값으로</button>
+            </div>
+            <div class="problem-fields">
+              <div class="field-row">
+                <label>영어 단어:</label>
+                <input type="text" id="problem-1-word" placeholder="happy" value="happy">
+              </div>
+              <div class="field-row">
+                <label>뜻:</label>
+                <input type="text" id="problem-1-meaning" placeholder="행복한, 기쁜" value="행복한, 기쁜">
+              </div>
+              <div class="field-row">
+                <label>예문 (영어):</label>
+                <input type="text" id="problem-1-example" placeholder="I am happy today." value="I am happy today.">
+              </div>
+              <div class="field-row">
+                <label>예문 (한글):</label>
+                <input type="text" id="problem-1-example-ko" placeholder="나는 오늘 행복해요." value="나는 오늘 행복해요.">
+              </div>
+              <div class="field-row">
+                <label>학생 문제:</label>
+                <input type="text" id="problem-1-question" placeholder="happy의 뜻은?" value="happy의 뜻은?">
+              </div>
+              <div class="field-row">
+                <label>정답:</label>
+                <input type="text" id="problem-1-answer" placeholder="행복한" value="행복한">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 문제 2: 속담 -->
+          <div class="problem-editor">
+            <div class="problem-header">
+              <span class="problem-label">2️⃣ 속담</span>
+              <button type="button" class="btn-small btn-secondary" id="reset-problem-2">기본값으로</button>
+            </div>
+            <div class="problem-fields">
+              <div class="field-row">
+                <label>속담 문제:</label>
+                <input type="text" id="problem-2-question" placeholder="티끌 모아 ___" value="티끌 모아 ___">
+              </div>
+              <div class="field-row">
+                <label>정답:</label>
+                <input type="text" id="problem-2-answer" placeholder="태산" value="태산">
+              </div>
+              <div class="field-row">
+                <label>힌트:</label>
+                <input type="text" id="problem-2-hint" placeholder="작은 것도 모으면 커진다" value="작은 것도 모으면 커진다">
+              </div>
+              <div class="field-row">
+                <label>학생 문제:</label>
+                <input type="text" id="problem-2-student-question" placeholder="티끌 모아 ___ 빈칸에 들어갈 말은?" value="티끌 모아 ___ 빈칸에 들어갈 말은?">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 문제 3: 어휘력 -->
+          <div class="problem-editor">
+            <div class="problem-header">
+              <span class="problem-label">3️⃣ 어휘력</span>
+              <button type="button" class="btn-small btn-secondary" id="reset-problem-3">기본값으로</button>
+            </div>
+            <div class="problem-fields">
+              <div class="field-row">
+                <label>문제:</label>
+                <input type="text" id="problem-3-question" placeholder="어려운 일을 포기하지 않고 계속하는 마음" value="어려운 일을 포기하지 않고 계속하는 마음">
+              </div>
+              <div class="field-row">
+                <label>정답:</label>
+                <input type="text" id="problem-3-answer" placeholder="끈기" value="끈기">
+              </div>
+              <div class="field-row">
+                <label>힌트:</label>
+                <input type="text" id="problem-3-hint" placeholder="인내심과 관련된 단어" value="인내심과 관련된 단어">
+              </div>
+            </div>
           </div>
         </div>
       </div>

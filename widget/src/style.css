@@ -271,8 +271,7 @@ body:fullscreen:hover .mode-controls {
   z-index: 100;
 }
 
-[data-mode="class"] #avatar-canvas,
-[data-mode="work"] #avatar-canvas {
+[data-mode="board"] #avatar-canvas {
   display: none;
 }
 
@@ -322,11 +321,6 @@ body:fullscreen:hover .mode-controls {
   word-break: break-all;
 }
 
-/* Work 모드에서 QR 숨김 */
-[data-mode="work"] .qr-card {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* 타이머 카드 */
 .timer-card {
@@ -438,8 +432,8 @@ body.timer-cosmic-mode .cosmic-timer-display {
   }
 }
 
-/* 수업시간 모드 - 타이머 카드도 숨김 */
-[data-mode="class"] .timer-card {
+/* 판서 모드 - 타이머 카드도 숨김 */
+[data-mode="board"] .timer-card {
   display: none;
 }
 
@@ -568,28 +562,6 @@ body.timer-cosmic-mode .cosmic-timer-display {
   font-weight: bold;
 }
 
-/* Class 모드: 타이머 카드 확대 & 중앙 배치 */
-[data-mode="class"] .timer-card {
-  display: block !important; /* 수업시간 모드에서는 항상 표시 */
-  top: 50%;
-  left: 50%;
-  bottom: auto;
-  right: auto;
-  transform: translate(-50%, -50%) scale(1.3);
-  width: 350px;
-  background: #FFFFFF;
-  opacity: 1;
-}
-
-[data-mode="class"] .timer-display {
-  font-size: 72px;
-  padding: 40px 20px;
-}
-
-/* Work 모드: 타이머 숨김 */
-[data-mode="work"] .timer-card {
-  display: none;
-}
 
 /* 스톱워치 카드 */
 .stopwatch-card {
@@ -606,8 +578,8 @@ body.timer-cosmic-mode .cosmic-timer-display {
   display: none; /* 기본 숨김 */
 }
 
-/* 수업시간 모드에서만 표시 */
-[data-mode="class"] .stopwatch-card {
+/* 판서 모드에서만 표시 */
+[data-mode="board"] .stopwatch-card {
   display: block;
 }
 
@@ -685,56 +657,90 @@ body.timer-cosmic-mode .cosmic-timer-display {
   border-bottom: 1px solid #F0F0F0;
 }
 
-/* 판서 도구 카드 */
-.board-card {
+/* 판서 도구 전체 화면 */
+.board-container {
   position: fixed;
-  top: 120px;
-  right: 40px;
-  width: 600px;
-  height: 500px;
-  background: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  transition: all 0.3s ease;
-  z-index: 999;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #2C3E50;
+  z-index: 10000;
   display: none; /* 기본 숨김 */
   flex-direction: column;
 }
 
-/* 수업시간 모드에서만 표시 */
-[data-mode="class"] .board-card {
+/* 판서 모드에서만 표시 */
+[data-mode="board"] .board-container {
   display: flex;
 }
 
-.board-header {
-  background: #66BB6A;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.board-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
 }
 
-.board-title {
+.board-text-editor {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 130px);
+  padding: 20px;
+  font-size: 24px;
   color: #FFFFFF;
-  font-size: 16px;
-  font-weight: bold;
+  background: #2C3E50;
+  border: none;
+  outline: none;
+  overflow-y: auto;
+  font-family: 'Noto Sans KR', Arial, sans-serif;
+  line-height: 1.6;
 }
 
-.board-tools {
+.board-text-editor:focus {
+  outline: 2px solid #4CAF50;
+}
+
+.board-toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: #34495E;
   display: flex;
-  gap: 8px;
   align-items: center;
+  padding: 10px 20px;
+  gap: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.board-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.board-tool-group label {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .tool-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 18px;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: #FFFFFF;
 }
 
 .tool-btn:hover {
@@ -743,42 +749,52 @@ body.timer-cosmic-mode .cosmic-timer-display {
 }
 
 .tool-btn.active {
-  background: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: #4CAF50;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
 }
 
 #color-picker {
   width: 40px;
-  height: 30px;
+  height: 35px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
 
 #size-slider {
-  width: 80px;
+  width: 120px;
   cursor: pointer;
 }
 
+#size-value {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: bold;
+  min-width: 50px;
+}
+
 #board-canvas {
-  flex: 1;
-  background: #2C3E50;
+  position: absolute;
+  top: 80px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 130px);
+  background: transparent;
   cursor: crosshair;
   touch-action: none;
+  pointer-events: none;
+  z-index: 10; /* 텍스트 에디터 위에 표시 */
 }
 
-/* Break 모드 & Work 모드: QR 코드와 아바타만 표시 */
-[data-mode="break"] .stopwatch-card,
-[data-mode="break"] .board-card,
-[data-mode="work"] .stopwatch-card,
-[data-mode="work"] .board-card,
-[data-mode="work"] .qr-card {
-  display: none;
+#board-canvas.active {
+  pointer-events: auto;
 }
 
-/* 수업시간 모드: QR 코드와 아바타 숨김 */
-[data-mode="class"] .qr-card {
-  display: none;
+/* 판서 모드: QR 코드, 아바타, 학습 카드 숨김 */
+[data-mode="board"] .qr-card,
+[data-mode="board"] #avatar-canvas,
+[data-mode="board"] .learning-card {
+  display: none !important;
 }
 
 /* 시간표 카드 */
@@ -871,13 +887,8 @@ body.timer-cosmic-mode .cosmic-timer-display {
   color: #FFFFFF;
 }
 
-/* Work 모드에서 시간표 숨김 */
-[data-mode="work"] .timetable-card {
-  display: none;
-}
-
-/* 수업시간 모드에서 시간표 숨김 */
-[data-mode="class"] .timetable-card {
+/* 판서 모드에서 시간표 숨김 */
+[data-mode="board"] .timetable-card {
   display: none;
 }
 
@@ -1206,6 +1217,87 @@ body.timer-cosmic-mode .cosmic-timer-display {
 .btn-secondary:hover {
   background: #EEEEEE;
   transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: #F44336;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #D32F2F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 12px;
+  min-width: auto;
+}
+
+/* 학습 카드 문제 편집 */
+.form-hint {
+  color: #666;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+
+.problem-editor {
+  background: #F8F9FA;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.problem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.problem-label {
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+}
+
+.problem-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.field-row label {
+  flex-shrink: 0;
+  width: 120px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  text-align: right;
+}
+
+.field-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #D0D0D0;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+}
+
+.field-row input:focus {
+  outline: none;
+  border-color: #4CAF50;
 }
 
 /* 우리반 코드 확대 모달 */

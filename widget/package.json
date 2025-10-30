@@ -25,15 +25,35 @@
       "package.json"
     ],
     "win": {
-      "target": ["portable"],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
       "sign": null
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "우리반 위젯"
+      "shortcutName": "우리반 위젯",
+      "perMachine": false,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "license": "LICENSE.txt"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "cavintop57-ai",
+      "repo": "classkit"
     }
   },
   "devDependencies": {

@@ -92,6 +92,7 @@ export class AmongUsAvatarRenderer {
         if (this.teacherAvatar) {
             this.teacherAvatar.floatOffset += 0.015;
             this.teacherAvatar.bounceOffset = Math.sin(this.teacherAvatar.floatOffset) * 8;
+            this.updateSpeechBubble(this.teacherAvatar, currentTime);
         }
     }
 
@@ -418,8 +419,28 @@ export class AmongUsAvatarRenderer {
         // 텍스트를 여러 줄로 나누기
         const lines = this.wrapText(bubble.text, maxWidth, fontSize);
         
-        // 말풍선 크기 계산 (줄 수에 따라 동적으로)
-        const bubbleWidth = isTeacher ? Math.min(maxWidth + padding * 2, 270) : Math.min(maxWidth + padding * 2, 400); // 교사용: 310 → 320px
+        // 실제 텍스트 너비 측정 (각 줄의 최대 너비 계산)
+        this.ctx.font = `bold ${fontSize}px Arial`;
+        let actualMaxWidth = 0;
+        lines.forEach(line => {
+            const lineWidth = this.ctx.measureText(line).width;
+            if (lineWidth > actualMaxWidth) {
+                actualMaxWidth = lineWidth;
+            }
+        });
+        
+        // 말풍선 크기 계산 (실제 텍스트 너비에 비례, 최소 너비 보장)
+        let bubbleWidth;
+        if (isTeacher) {
+            // 교사용: 고정 너비 사용
+            bubbleWidth = Math.min(maxWidth + padding * 2, 270);
+        } else {
+            // 학생용: 실제 텍스트 너비에 비례, 여백 최소화
+            const minWidth = 100; // 최소 너비
+            const calculatedWidth = actualMaxWidth + padding * 2;
+            bubbleWidth = Math.max(minWidth, Math.min(calculatedWidth, 400)); // 최대 400px
+        }
+        
         const bubbleHeight = lines.length * lineHeight + padding * 1.5;
         const bubbleX = x - bubbleWidth/2;
         const bubbleY = y - bubbleHeight - 10;
@@ -493,11 +514,8 @@ export class AmongUsAvatarRenderer {
         this.drawName('선생님', x, y - baseSize * 1.0);
         
         // 메시지 (더 위쪽에 표시, 선생님 전용 스타일)
-        if (this.teacherAvatar.message) {
-            this.drawSpeechBubble({
-                text: this.teacherAvatar.message,
-                endTime: Date.now() + 3000
-            }, x, y - 105, true); // isTeacher = true
+        if (this.teacherAvatar.speechBubble) {
+            this.drawSpeechBubble(this.teacherAvatar.speechBubble, x, y - 105, true); // isTeacher = true
         }
     }
 
@@ -534,7 +552,10 @@ export class AmongUsAvatarRenderer {
     // 선생님 설정
     setTeacher(message = null) {
         this.teacherAvatar = {
-            message,
+            speechBubble: message ? {
+                text: message,
+                endTime: Date.now() + 600000 // 10분
+            } : null,
             bounceOffset: 0,
             floatOffset: 0
         };
