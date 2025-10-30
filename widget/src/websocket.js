@@ -60,8 +60,20 @@ export class WebSocketManager {
       console.log(`💬 ${nickname}: ${content}`);
       
       // 해당 아바타에 말풍선 표시
+      // avatar_id는 1-8 범위이므로 0-7 인덱스로 변환
       if (avatar_id !== undefined && avatar_id !== null) {
-        this.avatarRenderer.addSpeechBubble(avatar_id, content, 5000);
+        const avatarIndex = avatar_id - 1; // 1-based를 0-based로 변환
+        console.log(`📍 아바타 인덱스: ${avatar_id} → ${avatarIndex}`);
+        
+        // 아바타가 존재하면 말풍선 표시
+        if (avatarIndex >= 0 && avatarIndex < this.avatarRenderer.avatars.length) {
+          this.avatarRenderer.addSpeechBubble(avatarIndex, content, 5000);
+        } else {
+          // 아바타가 없으면 새로 추가 후 말풍선 표시
+          console.log(`🆕 새 아바타 추가: ${avatarIndex} - ${nickname}`);
+          this.avatarRenderer.addAvatar(avatarIndex, nickname);
+          this.avatarRenderer.addSpeechBubble(avatarIndex, content, 5000);
+        }
       }
       
       // 전체 공지로도 표시 (옵션)

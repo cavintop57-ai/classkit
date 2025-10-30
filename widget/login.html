@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교사 로그인 - 우리반 위젯</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 50px;
+      max-width: 500px;
+      width: 100%;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo-icon {
+      font-size: 60px;
+      margin-bottom: 15px;
+    }
+
+    .logo-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .logo-subtitle {
+      font-size: 14px;
+      color: #999;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: #bbb;
+    }
+
+    .password-input-container {
+      position: relative;
+    }
+
+    .password-dots {
+      display: flex;
+      gap: 10px;
+      padding: 14px 18px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      justify-content: center;
+      background: white;
+      transition: all 0.3s ease;
+    }
+
+    .password-dots.focused {
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .password-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #ddd;
+      background: white;
+      transition: all 0.2s ease;
+    }
+
+    .password-dot.filled {
+      background: #667eea;
+      border-color: #667eea;
+    }
+
+    .password-input-hidden {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .password-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .checkbox-input {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .checkbox-label {
+      font-size: 14px;
+      color: #555;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    .login-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 12px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+      animation: shake 0.3s ease;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .session-preview {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .session-preview-label {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    .session-preview-code {
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
+      letter-spacing: 4px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .student-link {
+      margin-top: 30px;
+      text-align: center;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+    }
+
+    .student-link-title {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 10px;
+    }
+
+    .student-link-url {
+      font-size: 14px;
+      color: #667eea;
+      font-weight: 600;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">
+      <div class="logo-icon">👨‍🏫</div>
+      <div class="logo-title">교사 로그인</div>
+      <div class="logo-subtitle">우리반 위젯 접속</div>
+    </div>
+
+    <div class="error-message" id="error-message"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label" for="school-name">학교 이름</label>
+        <input 
+          type="text" 
+          id="school-name" 
+          class="form-input" 
+          placeholder="예: 서울초등학교"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="teacher-name">담임교사 이름</label>
+        <input 
+          type="text" 
+          id="teacher-name" 
+          class="form-input" 
+          placeholder="예: 홍길동"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">세션 비밀번호 (숫자 5자리)</label>
+        <div class="password-input-container">
+          <div class="password-dots" id="password-dots">
+            <div class="password-dot"></div>
+            <div class="password-dot"></div>
+            <div class="password-dot"></div>
+            <div class="password-dot"></div>
+            <div class="password-dot"></div>
+          </div>
+          <input 
+            type="tel" 
+            id="session-password" 
+            class="password-input-hidden"
+            maxlength="5"
+            pattern="[0-9]{5}"
+            required
+          >
+        </div>
+        <div class="password-hint">클릭하여 5자리 숫자를 입력하세요</div>
+      </div>
+
+      <div class="session-preview">
+        <div class="session-preview-label">생성될 세션 코드 (학교+교사 이름으로 고유 생성)</div>
+        <div class="session-preview-code" id="session-preview">-----</div>
+        <div class="password-hint" style="margin-top: 12px; font-size: 11px; color: #666;">
+          💡 같은 학교+교사 이름으로 로그인하면 항상 같은 세션 코드가 생성됩니다
+        </div>
+      </div>
+
+      <div class="checkbox-group">
+        <input 
+          type="checkbox" 
+          id="auto-login" 
+          class="checkbox-input"
+          checked
+        >
+        <label for="auto-login" class="checkbox-label">
+          다음에 자동으로 로그인 (권장)
+        </label>
+      </div>
+
+      <button type="submit" class="login-button" id="login-button">
+        로그인 하기 🚀
+      </button>
+    </form>
+
+    <div class="student-link">
+      <div class="student-link-title">📱 학생 접속 주소</div>
+      <div class="student-link-url" id="student-link">
+        https://phpstack-1293143-5917982.cloudwaysapps.com/
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 비밀번호 입력 UI
+    const passwordDots = document.getElementById('password-dots');
+    const passwordInput = document.getElementById('session-password');
+    const sessionPreview = document.getElementById('session-preview');
+    const dots = passwordDots.querySelectorAll('.password-dot');
+    const schoolNameInput = document.getElementById('school-name');
+    const teacherNameInput = document.getElementById('teacher-name');
+
+    // 간단한 해시 함수 (문자열 → 숫자)
+    function simpleHash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // 32bit 정수로 변환
+      }
+      return Math.abs(hash);
+    }
+
+    // 학교이름 + 교사이름 → 결정적 알파벳 생성 (항상 동일)
+    function generateDeterministicLetter(schoolName, teacherName) {
+      const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // O, I 제외
+      const combined = (schoolName || '') + (teacherName || '');
+      
+      if (!combined.trim()) {
+        return '-'; // 빈 값이면 대시
+      }
+      
+      const hash = simpleHash(combined);
+      return letters[hash % letters.length];
+    }
+
+    // 초기 알파벳 (빈 값)
+    let sessionLetter = '-';
+
+    // 세션 코드 미리보기 업데이트 함수
+    function updateSessionPreview() {
+      const schoolName = schoolNameInput.value.trim();
+      const teacherName = teacherNameInput.value.trim();
+      const password = passwordInput.value;
+
+      // 학교이름 + 교사이름으로 알파벳 생성
+      sessionLetter = generateDeterministicLetter(schoolName, teacherName);
+
+      // 미리보기 업데이트
+      if (password.length === 5) {
+        sessionPreview.textContent = sessionLetter + password;
+      } else {
+        const preview = sessionLetter + password + '-'.repeat(5 - password.length);
+        sessionPreview.textContent = preview;
+      }
+    }
+
+    // 학교이름 입력 이벤트
+    schoolNameInput.addEventListener('input', updateSessionPreview);
+
+    // 교사이름 입력 이벤트
+    teacherNameInput.addEventListener('input', updateSessionPreview);
+
+    // 비밀번호 입력 이벤트
+    passwordDots.addEventListener('click', () => {
+      passwordInput.focus();
+    });
+
+    passwordInput.addEventListener('focus', () => {
+      passwordDots.classList.add('focused');
+    });
+
+    passwordInput.addEventListener('blur', () => {
+      passwordDots.classList.remove('focused');
+    });
+
+    passwordInput.addEventListener('input', (e) => {
+      const value = e.target.value.replace(/[^0-9]/g, '');
+      e.target.value = value;
+
+      // 점 업데이트
+      dots.forEach((dot, index) => {
+        if (index < value.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      });
+
+      // 세션 코드 미리보기 업데이트
+      updateSessionPreview();
+    });
+
+    // 폼 제출
+    const loginForm = document.getElementById('login-form');
+    const errorMessage = document.getElementById('error-message');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const schoolName = document.getElementById('school-name').value.trim();
+      const teacherName = document.getElementById('teacher-name').value.trim();
+      const password = passwordInput.value;
+      const autoLogin = document.getElementById('auto-login').checked;
+
+      // 유효성 검사
+      if (!schoolName || !teacherName) {
+        showError('학교 이름과 교사 이름을 모두 입력해주세요.');
+        return;
+      }
+
+      if (password.length !== 5 || !/^[0-9]{5}$/.test(password)) {
+        showError('세션 비밀번호는 5자리 숫자여야 합니다.');
+        return;
+      }
+
+      // 알파벳 재계산 (항상 동일하게)
+      const letter = generateDeterministicLetter(schoolName, teacherName);
+      const sessionCode = letter + password;
+
+      console.log(`🔑 세션 코드 생성: ${schoolName} + ${teacherName} → ${letter} + ${password} = ${sessionCode}`);
+
+      // 로그인 정보 저장
+      const loginData = {
+        schoolName,
+        teacherName,
+        sessionCode,
+        sessionPassword: password,
+        autoLogin,
+        loginAt: new Date().toISOString()
+      };
+
+      if (autoLogin) {
+        localStorage.setItem('teacherLoginData', JSON.stringify(loginData));
+      }
+
+      // 위젯 페이지로 이동
+      window.location.href = 'index.html';
+    });
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.classList.add('show');
+      setTimeout(() => {
+        errorMessage.classList.remove('show');
+      }, 3000);
+    }
+
+    // 페이지 로드 시 저장된 정보 불러오기
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedData = localStorage.getItem('teacherLoginData');
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          
+          if (data.autoLogin) {
+            // 자동 로그인이 체크되어 있으면 바로 위젯으로 이동
+            console.log('🔄 자동 로그인 중...', data.teacherName);
+            window.location.href = 'index.html';
+            return;
+          }
+          
+          // 자동 로그인이 아니어도 폼에 정보 채우기
+          if (data.schoolName) {
+            schoolNameInput.value = data.schoolName;
+          }
+          if (data.teacherName) {
+            teacherNameInput.value = data.teacherName;
+          }
+          if (data.sessionPassword) {
+            passwordInput.value = data.sessionPassword;
+            // 점 채우기
+            dots.forEach((dot, index) => {
+              if (index < data.sessionPassword.length) {
+                dot.classList.add('filled');
+              }
+            });
+          }
+          
+          // 미리보기 업데이트
+          updateSessionPreview();
+          
+          console.log('📂 저장된 정보 불러오기:', data.schoolName, data.teacherName);
+        } catch (error) {
+          console.error('저장된 로그인 정보 불러오기 실패:', error);
+        }
+      } else {
+        // 세션 미리보기 초기화
+        sessionPreview.textContent = '-----';
+      }
+    });
+  </script>
+</body>
+</html>
+

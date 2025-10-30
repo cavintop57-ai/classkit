@@ -4,6 +4,40 @@ import { LearningCard } from './learningCard.js';
 import { SpaceBackgroundSystem } from './spaceBackgroundSystem.js';
 import { WebSocketManager } from './websocket.js';
 
+// 로그인 체크 (페이지 로드 시 즉시 실행)
+(function checkLogin() {
+  const loginData = localStorage.getItem('teacherLoginData');
+  
+  if (!loginData) {
+    // 로그인 정보가 없으면 로그인 페이지로 이동
+    window.location.href = 'login.html';
+    return;
+  }
+  
+  try {
+    const data = JSON.parse(loginData);
+    
+    // 세션 코드가 없으면 로그인 페이지로
+    if (!data.sessionCode || !data.teacherName) {
+      localStorage.removeItem('teacherLoginData');
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    // 교사 이름 표시
+    const teacherNameEl = document.getElementById('teacher-name');
+    if (teacherNameEl) {
+      teacherNameEl.textContent = data.teacherName;
+    }
+    
+    console.log('✅ 로그인 확인:', data.teacherName, data.sessionCode);
+  } catch (error) {
+    console.error('❌ 로그인 데이터 파싱 오류:', error);
+    localStorage.removeItem('teacherLoginData');
+    window.location.href = 'login.html';
+  }
+})();
+
 // 모드 관리
 let currentMode = 'break'; // 'break' | 'class' | 'work'
 
@@ -330,14 +364,21 @@ async function validateSession(session) {
 }
 
 /**
- * 세션 초기화 (기존 세션 재사용 또는 새로 생성)
+ * 세션 초기화 (교사 로그인 정보 기반)
  */
 async function initSession() {
+  // 교사 로그인 정보에서 세션 코드 가져오기
+  const loginData = JSON.parse(localStorage.getItem('teacherLoginData'));
+  const teacherSessionCode = loginData.sessionCode;
+  
+  console.log('🔑 교사 세션 코드:', teacherSessionCode);
+  
   // 1. 저장된 세션 확인
   const savedSession = loadSession();
   
-  if (savedSession) {
-    // 2. 세션 유효성 검증
+  // 2. 저장된 세션이 있고, 교사의 세션 코드와 일치하는지 확인
+  if (savedSession && savedSession.code === teacherSessionCode) {
+    // 3. 세션 유효성 검증
     const isValid = await validateSession(savedSession);
     
     if (isValid) {
@@ -359,12 +400,75 @@ async function initSession() {
     }
   }
   
-  // 3. 새 세션 생성
-  return await createSession();
+  // 4. 교사의 세션 코드로 새 세션 생성
+  return await createSessionWithCode(teacherSessionCode);
 }
 
 /**
- * 새 세션 생성 (로컬 모드 폴백 지원)
+ * 교사의 세션 코드로 세션 생성
+ */
+async function createSessionWithCode(sessionCode) {
+  try {
+    // 백엔드에서 해당 세션 코드로 세션 생성 요청
+    const savedClassData = loadClassData();
+    const requestBody = savedClassData?.classId 
+      ? { class_id: savedClassData.classId, code: sessionCode }
+      : { code: sessionCode };
+    
+    const response = await fetch(`${API_BASE}/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`세션 생성 실패: ${response.status}`);
+    }
+    
+    const session = await response.json();
+    currentSession = session;
+    
+    // 세션 저장
+    saveSession(session);
+    
+    console.log('✅ 교사 세션 생성:', session.code);
+    
+    // UI 업데이트
+    document.getElementById('session-code').textContent = session.code;
+    
+    // QR 코드 생성 및 표시
+    updateQRCode(session.qr_url);
+    
+    // WebSocket 연결
+    connectWebSocket(session.code);
+    
+    return session;
+  } catch (error) {
+    console.error('❌ 세션 생성 오류:', error);
+    console.log('📴 로컬 모드로 전환합니다...');
+    
+    // 로컬 모드: 교사 세션 코드 사용
+    currentSession = {
+      id: 'local',
+      code: sessionCode,
+      qr_url: `로컬 모드 (오프라인)`,
+      is_local: true
+    };
+    
+    // UI 업데이트
+    document.getElementById('session-code').textContent = sessionCode;
+    document.getElementById('qr-url').textContent = '로컬 모드 (오프라인)';
+    document.getElementById('qr-code').innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">📴<br>오프라인 모드</div>';
+    
+    console.log('✅ 로컬 세션 생성:', sessionCode);
+    
+    // WebSocket 연결 시도하지 않음 (로컬 모드)
+    return currentSession;
+  }
+}
+
+/**
+ * 새 세션 생성 (로컬 모드 폴백 지원) - 레거시
  */
 async function createSession() {
   try {
@@ -859,6 +963,27 @@ document.getElementById('btn-fullscreen').addEventListener('click', toggleFullsc
 // 타이머 버튼 이벤트
 document.getElementById('timer-start-btn').addEventListener('click', toggleTimer);
 document.getElementById('timer-reset-btn').addEventListener('click', resetTimer);
+
+// 로그아웃 버튼 이벤트
+document.getElementById('btn-logout').addEventListener('click', () => {
+  const confirmed = confirm('로그아웃 하시겠습니까?\n\n현재 세션이 종료되고 다음 사용자가 접속할 수 있습니다.');
+  
+  if (confirmed) {
+    // 1. 로그인 정보 삭제
+    localStorage.removeItem('teacherLoginData');
+    
+    // 2. 세션 정보 삭제
+    localStorage.removeItem('currentSession');
+    
+    // 3. 우리반 정보는 유지 (필요시 삭제 가능)
+    // localStorage.removeItem('classData');
+    
+    console.log('🚪 로그아웃 완료');
+    
+    // 4. 로그인 페이지로 이동
+    window.location.href = 'login.html';
+  }
+});
 
 // 타이머 증감 버튼 이벤트
 document.getElementById('timer-increase').addEventListener('click', () => {

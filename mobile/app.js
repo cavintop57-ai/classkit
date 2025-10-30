@@ -34,6 +34,14 @@ function showScreen(screenId) {
 
 // URL에서 세션 코드 가져오기
 function getSessionCodeFromURL() {
+  // 1. URL 파라미터에서 확인 (QR 코드 경로: /mobile/?code=A12345)
+  const urlParams = new URLSearchParams(window.location.search);
+  const codeParam = urlParams.get('code');
+  if (codeParam && /^[A-Z][0-9]{5}$/.test(codeParam)) {
+    return codeParam;
+  }
+  
+  // 2. 경로에서 확인 (레거시 경로: /A12345)
   const path = window.location.pathname;
   const match = path.match(/\/([A-Z][0-9]{5})/);
   return match ? match[1] : null;

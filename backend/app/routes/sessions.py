@@ -14,6 +14,7 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 class SessionCreate(BaseModel):
     class_id: Optional[str] = None  # 없으면 자동 생성
+    code: Optional[str] = None  # 커스텀 세션 코드 (교사 로그인용)
 
 class SessionResponse(BaseModel):
     id: str
@@ -79,22 +80,61 @@ async def create_session(
         await db.refresh(class_row)
         print("✅ Default Class 자동 생성")
     
-    # 2️⃣ 세션 코드 중복 피하기
-    max_attempts = 10
-    for _ in range(max_attempts):
-        code = generate_session_code()
+    # 2️⃣ 세션 코드 생성 또는 사용
+    if data.code:
+        # 커스텀 세션 코드 사용 (교사 로그인)
+        code = data.code
+        print(f"📌 커스텀 세션 코드 사용: {code}")
         
-        # 중복 체크
+        # 중복 체크 (활성 세션만)
         result = await db.execute(
             select(SessionModel).where(
                 SessionModel.code == code,
                 SessionModel.ended_at.is_(None)
             )
         )
-        if not result.scalar_one_or_none():
-            break
+        existing_session = result.scalar_one_or_none()
+        
+        if existing_session:
+            # 기존 세션이 있으면 만료 시간만 연장
+            existing_session.expires_at = datetime.now() + timedelta(hours=4)
+            await db.commit()
+            await db.refresh(existing_session)
+            print(f"♻️ 기존 세션 재사용 (만료 시간 연장): {code}")
+            
+    # 환경변수에서 도메인 가져오기
+    # 프로덕션: DOMAIN_URL 환경변수 설정 필요
+    # 예: DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
+    domain = os.getenv('DOMAIN_URL', 'https://phpstack-1293143-5917982.cloudwaysapps.com')
+    
+    # QR URL: 모바일 페이지 경로 (학생용)
+    mobile_url = f"{domain}/mobile/?code={existing_session.code}"
+    
+    return SessionResponse(
+        id=str(existing_session.id),
+        code=existing_session.code,
+        class_id=str(existing_session.class_id),
+        started_at=existing_session.started_at,
+        expires_at=existing_session.expires_at,
+        qr_url=mobile_url
+    )
     else:
-        raise HTTPException(status_code=500, detail="세션 코드 생성 실패")
+        # 랜덤 세션 코드 생성
+        max_attempts = 10
+        for _ in range(max_attempts):
+            code = generate_session_code()
+            
+            # 중복 체크
+            result = await db.execute(
+                select(SessionModel).where(
+                    SessionModel.code == code,
+                    SessionModel.ended_at.is_(None)
+                )
+            )
+            if not result.scalar_one_or_none():
+                break
+        else:
+            raise HTTPException(status_code=500, detail="세션 코드 생성 실패")
     
     # 3️⃣ 세션 생성
     expires_at = datetime.now() + timedelta(hours=4)  # 4시간 유효
@@ -110,8 +150,13 @@ async def create_session(
     
     print(f"✅ 세션 생성 완료: {session.code}")
     
-    # 환경변수에서 도메인 가져오기 (기본값: localhost)
-    domain = os.getenv('DOMAIN_URL', 'http://localhost:8000')
+    # 환경변수에서 도메인 가져오기
+    # 프로덕션: DOMAIN_URL 환경변수 설정 필요
+    # 예: DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
+    domain = os.getenv('DOMAIN_URL', 'https://phpstack-1293143-5917982.cloudwaysapps.com')
+    
+    # QR URL: 모바일 페이지 경로 (학생용)
+    mobile_url = f"{domain}/mobile/?code={session.code}"
     
     return SessionResponse(
         id=str(session.id),
@@ -119,7 +164,7 @@ async def create_session(
         class_id=str(session.class_id),
         started_at=session.started_at,
         expires_at=session.expires_at,
-        qr_url=f"{domain}/{session.code}"
+        qr_url=mobile_url
     )
 
 @router.get("/{code}")

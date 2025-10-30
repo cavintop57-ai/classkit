@@ -39,9 +39,14 @@ echo ""
 # 5. 서버 재시작
 echo "[5/5] 서버 재시작..."
 cd "$APP_DIR/backend"
+
+# 환경변수 설정
+export DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
+
 nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
 disown
 echo "✅ 서버 시작됨 (PID: $!)"
+echo "✅ 환경변수: DOMAIN_URL=$DOMAIN_URL"
 echo ""
 
 # 확인

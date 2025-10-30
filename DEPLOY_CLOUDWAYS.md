@@ -93,6 +93,32 @@ cd ~/classkit/backend && source venv/bin/activate && nohup python -m uvicorn app
 
 ---
 
+## ⚙️ 환경변수 설정
+
+QR 코드가 올바른 도메인을 사용하려면 환경변수를 설정하세요:
+
+```bash
+# SSH 접속
+ssh master_xhbedwcksw@167.172.70.163
+
+# 환경변수 설정
+export DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
+
+# 서버 재시작
+pkill -f uvicorn
+cd ~/classkit/backend && source venv/bin/activate && nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+```
+
+**또는** 서버 시작 스크립트에 추가:
+```bash
+cd ~/classkit/backend
+source venv/bin/activate
+export DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
+nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
+```
+
+---
+
 ## 🐛 문제 해결
 
 ### Health check 실패:
@@ -110,6 +136,10 @@ netstat -tlnp | grep 8000
 ### Git clone 실패 (Private 레포):
 → Public으로 변경하거나
 → `deploy.bat` 실행 시 GitHub Username/Token 입력
+
+### QR 코드가 잘못된 도메인 표시:
+→ 환경변수 `DOMAIN_URL` 설정 확인
+→ 서버 재시작 후 테스트
 
 ---
 

@@ -77,3 +77,5 @@ class ConnectionManager:
 # 전역 인스턴스
 manager = ConnectionManager()
 
+
+
