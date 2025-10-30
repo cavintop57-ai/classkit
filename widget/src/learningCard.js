@@ -329,69 +329,79 @@ export class LearningCard {
               this.ctx.fillStyle = '#333333';
               this.ctx.font = 'bold 16px Pretendard, sans-serif';
               this.ctx.textAlign = 'center';
-              this.ctx.fillText(problem.word, cardX + this.cardWidth / 2, cardY + 50);
+              this.ctx.fillText(problem.word || 'N/A', cardX + this.cardWidth / 2, cardY + 50);
               
               this.ctx.fillStyle = '#666666';
               this.ctx.font = '12px Pretendard, sans-serif';
-              this.ctx.fillText(problem.meaning, cardX + this.cardWidth / 2, cardY + 68);
+              this.ctx.fillText(problem.meaning || 'N/A', cardX + this.cardWidth / 2, cardY + 68);
               
-              this.ctx.fillStyle = '#999999';
-              this.ctx.font = '10px Pretendard, sans-serif';
-              this.wrapText(
-                problem.example,
-                cardX + this.cardWidth / 2,
-                cardY + 88,
-                this.cardWidth - 24,
-                12
-              );
+              if (problem.example) {
+                this.ctx.fillStyle = '#999999';
+                this.ctx.font = '10px Pretendard, sans-serif';
+                this.wrapText(
+                  problem.example,
+                  cardX + this.cardWidth / 2,
+                  cardY + 88,
+                  this.cardWidth - 24,
+                  12
+                );
+              }
               
-              this.ctx.fillStyle = '#CCCCCC';
-              this.ctx.font = '9px Pretendard, sans-serif';
-              this.wrapText(
-                problem.example_ko,
-                cardX + this.cardWidth / 2,
-                cardY + 105,
-                this.cardWidth - 24,
-                10
-              );
+              if (problem.example_ko) {
+                this.ctx.fillStyle = '#CCCCCC';
+                this.ctx.font = '9px Pretendard, sans-serif';
+                this.wrapText(
+                  problem.example_ko,
+                  cardX + this.cardWidth / 2,
+                  cardY + 105,
+                  this.cardWidth - 24,
+                  10
+                );
+              }
             } else if (problem.type === 'vocab') {
               // 어휘력 카드
               this.ctx.fillStyle = '#333333';
               this.ctx.font = 'bold 16px Pretendard, sans-serif';
               this.ctx.textAlign = 'center';
-              this.ctx.fillText(problem.word, cardX + this.cardWidth / 2, cardY + 50);
+              this.ctx.fillText(problem.word || problem.question || 'N/A', cardX + this.cardWidth / 2, cardY + 50);
               
-              this.ctx.fillStyle = '#666666';
-              this.ctx.font = '12px Pretendard, sans-serif';
-              this.wrapText(
-                problem.meaning,
-                cardX + this.cardWidth / 2,
-                cardY + 70,
-                this.cardWidth - 24,
-                14
-              );
+              if (problem.meaning) {
+                this.ctx.fillStyle = '#666666';
+                this.ctx.font = '12px Pretendard, sans-serif';
+                this.wrapText(
+                  problem.meaning,
+                  cardX + this.cardWidth / 2,
+                  cardY + 70,
+                  this.cardWidth - 24,
+                  14
+                );
+              }
               
-              this.ctx.fillStyle = '#999999';
-              this.ctx.font = '10px Pretendard, sans-serif';
-              this.wrapText(
-                problem.example,
-                cardX + this.cardWidth / 2,
-                cardY + 95,
-                this.cardWidth - 24,
-                12
-              );
-            } else {
+              if (problem.example) {
+                this.ctx.fillStyle = '#999999';
+                this.ctx.font = '10px Pretendard, sans-serif';
+                this.wrapText(
+                  problem.example,
+                  cardX + this.cardWidth / 2,
+                  cardY + 95,
+                  this.cardWidth - 24,
+                  12
+                );
+              }
+            } else if (problem.type === 'proverb') {
               // 속담 카드 (기존 방식)
-              this.ctx.fillStyle = '#333333';
-              this.ctx.font = 'bold 13px Pretendard, sans-serif';
-              this.ctx.textAlign = 'center';
-              this.wrapText(
-                problem.question,
-                cardX + this.cardWidth / 2,
-                cardY + 55,
-                this.cardWidth - 24,
-                16
-              );
+              if (problem.question) {
+                this.ctx.fillStyle = '#333333';
+                this.ctx.font = 'bold 13px Pretendard, sans-serif';
+                this.ctx.textAlign = 'center';
+                this.wrapText(
+                  problem.question,
+                  cardX + this.cardWidth / 2,
+                  cardY + 55,
+                  this.cardWidth - 24,
+                  16
+                );
+              }
               
               // 힌트 (있으면)
               if (problem.hint) {
