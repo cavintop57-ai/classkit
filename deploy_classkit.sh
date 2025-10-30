@@ -16,17 +16,26 @@ git pull origin main
 echo "✅ Git pull 완료"
 echo ""
 
-# 2. 패키지 설치
-echo "[2/5] Python 패키지 설치..."
-python3 -m pip install --user -q -r backend/requirements.txt
-echo "✅ 패키지 설치 완료"
+# 2. 가상환경 준비 및 패키지 설치
+echo "[2/5] Python 패키지 설치 (venv)..."
+cd "$APP_DIR/backend"
+if [ ! -d "venv" ]; then
+  python3 -m venv venv
+fi
+source venv/bin/activate
+python -m pip install -q --upgrade pip
+python -m pip install -q -r requirements.txt
+echo "✅ 패키지 설치 완료 (venv)"
 echo ""
 
-# 3. DB 초기화
-echo "[3/5] 데이터베이스 초기화..."
-cd "$APP_DIR/backend"
-python3 -m app.init_db
-echo "✅ DB 초기화 완료"
+# 3. DB 초기화 (이미 있으면 건너뛰기)
+echo "[3/5] 데이터베이스 확인..."
+if [ ! -f "data/classkit.db" ]; then
+  echo "   DB 파일이 없음, 초기화 시도..."
+  python -m app.init_db 2>/dev/null || echo "   ⚠️ DB 초기화 실패 (건너뜀)"
+else
+  echo "   ✅ 기존 DB 파일 사용"
+fi
 echo ""
 
 # 4. 기존 프로세스 종료
