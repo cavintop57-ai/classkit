@@ -52,6 +52,23 @@ cd "$APP_DIR/backend"
 # 환경변수 설정
 export DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
 
+# MySQL 환경변수 (Cloudways에서 제공)
+# ~/.my.cnf 에서 자동으로 읽거나 직접 설정
+if [ -f ~/.my.cnf ]; then
+  echo "✅ MySQL 설정 파일 발견: ~/.my.cnf"
+  export DB_HOST=$(grep -oP '(?<=host=).+' ~/.my.cnf | head -1)
+  export DB_USER=$(grep -oP '(?<=user=).+' ~/.my.cnf | head -1)
+  export DB_PASSWORD=$(grep -oP '(?<=password=).+' ~/.my.cnf | head -1)
+  export DB_NAME=${DB_NAME:-classkit}
+  echo "✅ MySQL 연결 정보 로드 완료"
+else
+  echo "⚠️ ~/.my.cnf 없음. 환경변수를 직접 설정하세요."
+  echo "  export DB_HOST=localhost"
+  echo "  export DB_USER=root"
+  echo "  export DB_PASSWORD=your_password"
+  echo "  export DB_NAME=classkit"
+fi
+
 nohup python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 > ~/classkit.log 2>&1 &
 disown
 echo "✅ 서버 시작됨 (PID: $!)"
