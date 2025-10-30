@@ -26,6 +26,3 @@ dist-ssr
 # Build artifacts
 release
 
-# Public folder (auto-generated from assets)
-public
-
