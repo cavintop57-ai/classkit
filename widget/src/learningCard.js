@@ -27,7 +27,7 @@ export class LearningCard {
     this.setupClickEvents();
     
     // 카드 위치 및 크기
-    this.cardWidth = 280;
+    this.cardWidth = 200;
     this.cardHeight = 120;
     this.cardGap = 20; // 카드 간격 (동일하게)
     

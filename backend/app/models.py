@@ -25,6 +25,8 @@ class Session(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     class_id = Column(String(36), ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
     code = Column(CHAR(6), nullable=False, unique=True)  # 알파벳1 + 숫자5
+    problems = Column(JSON, nullable=True)  # 세션에 사용할 문제 3개
+    student_names = Column(JSON, nullable=True)  # 학생 명단 (검증용)
     started_at = Column(TIMESTAMP, server_default=func.now())
     ended_at = Column(TIMESTAMP, nullable=True)
     expires_at = Column(TIMESTAMP, nullable=False)

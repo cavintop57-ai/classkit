@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy import text
 from .database import engine
-from .routes import websocket, sessions, messages, problems
+from .routes import websocket, sessions, messages, problems, conversation
 from .init_db import create_tables
 from pathlib import Path
 
@@ -34,6 +34,7 @@ app.include_router(websocket.router)
 app.include_router(sessions.router, prefix="/api")
 app.include_router(messages.router, prefix="/api")
 app.include_router(problems.router, prefix="/api")
+app.include_router(conversation.router, prefix="/api")
 
 # Health check 엔드포인트 (최우선)
 @app.get("/health")

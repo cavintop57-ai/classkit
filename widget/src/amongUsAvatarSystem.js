@@ -41,15 +41,21 @@ export class AmongUsAvatarRenderer {
         const colorIndex = id % this.colors.length;
         const color = this.colors[colorIndex];
         
-        // 우주에서 자유롭게 날아다님
+        // 안전 영역 계산 (카드 영역 제외)
+        const safeLeft = 280;  // QR 카드 + 여유
+        const safeRight = this.canvas.width - 280;  // 학습 카드 영역
+        const safeTop = 140;  // 상단 버튼들 + 여유
+        const safeBottom = this.canvas.height - 120;  // 하단 여유
+        
+        // 우주에서 자유롭게 날아다님 (안전 영역 내)
         const avatar = {
             id,
             name,
             color,
-            x: Math.random() * (this.canvas.width - 100) + 50,
-            y: Math.random() * (this.canvas.height - 100) + 50,
-            targetX: Math.random() * (this.canvas.width - 100) + 50,
-            targetY: Math.random() * (this.canvas.height - 100) + 50,
+            x: Math.random() * (safeRight - safeLeft) + safeLeft,
+            y: Math.random() * (safeBottom - safeTop) + safeTop,
+            targetX: Math.random() * (safeRight - safeLeft) + safeLeft,
+            targetY: Math.random() * (safeBottom - safeTop) + safeTop,
             dir: Math.random() < 0.5 ? 1 : -1, // 1: 오른쪽, -1: 왼쪽
             speed: 0.8 + Math.random() * 1.5,
             floatOffset: Math.random() * Math.PI * 2,
@@ -92,6 +98,12 @@ export class AmongUsAvatarRenderer {
     updateAvatarMovement(avatar) {
         const currentTime = Date.now();
         
+        // 안전 영역 계산
+        const safeLeft = 280;
+        const safeRight = this.canvas.width - 280;
+        const safeTop = 140;
+        const safeBottom = this.canvas.height - 120;
+        
         // 휴식 상태 체크
         if (!avatar.isMoving) {
             avatar.idleTime += 16; // ~60fps
@@ -101,9 +113,9 @@ export class AmongUsAvatarRenderer {
                 avatar.idleTime = 0;
                 avatar.nextIdleCheck = currentTime + 2000 + Math.random() * 3000;
                 
-                // 새 목표 설정
-                avatar.targetX = Math.random() * (this.canvas.width - 100) + 50;
-                avatar.targetY = Math.random() * (this.canvas.height - 100) + 50;
+                // 새 목표 설정 (안전 영역 내)
+                avatar.targetX = Math.random() * (safeRight - safeLeft) + safeLeft;
+                avatar.targetY = Math.random() * (safeBottom - safeTop) + safeTop;
             }
             
             // 떠다니는 효과는 계속
@@ -131,16 +143,16 @@ export class AmongUsAvatarRenderer {
             // 방향 업데이트
             avatar.dir = dx > 0 ? 1 : -1;
         } else {
-            // 새 목표 설정 - 우주 전체 영역
-            avatar.targetX = Math.random() * (this.canvas.width - 100) + 50;
-            avatar.targetY = Math.random() * (this.canvas.height - 100) + 50;
+            // 새 목표 설정 - 안전 영역 내
+            avatar.targetX = Math.random() * (safeRight - safeLeft) + safeLeft;
+            avatar.targetY = Math.random() * (safeBottom - safeTop) + safeTop;
         }
         
-        // 화면 경계 체크
-        if (avatar.x < 30) avatar.x = 30;
-        if (avatar.x > this.canvas.width - 30) avatar.x = this.canvas.width - 30;
-        if (avatar.y < 30) avatar.y = 30;
-        if (avatar.y > this.canvas.height - 30) avatar.y = this.canvas.height - 30;
+        // 안전 영역 경계 체크 (카드 영역 제외)
+        if (avatar.x < safeLeft) avatar.x = safeLeft;
+        if (avatar.x > safeRight) avatar.x = safeRight;
+        if (avatar.y < safeTop) avatar.y = safeTop;
+        if (avatar.y > safeBottom) avatar.y = safeBottom;
         
         // 우주에서 떠다니는 효과
         avatar.floatOffset += avatar.floatSpeed;
@@ -325,16 +337,90 @@ export class AmongUsAvatarRenderer {
         this.ctx.restore();
     }
 
+    /**
+     * 텍스트를 최대 폭에 맞게 여러 줄로 나누기 (한글/영어 자동 처리)
+     */
+    wrapText(text, maxWidth, fontSize) {
+        this.ctx.font = `bold ${fontSize}px Arial`;
+        
+        const lines = [];
+        let currentLine = '';
+        
+        // 공백으로 먼저 나누기 (영어 단어 단위)
+        const words = text.split(' ');
+        
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const metrics = this.ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth) {
+                if (currentLine) {
+                    // 현재 줄 저장
+                    lines.push(currentLine);
+                    currentLine = word;
+                    
+                    // 단어 자체가 너무 긴 경우 (한글 등)
+                    const wordMetrics = this.ctx.measureText(word);
+                    if (wordMetrics.width > maxWidth) {
+                        // 글자 단위로 나누기
+                        let charLine = '';
+                        for (let j = 0; j < word.length; j++) {
+                            const testChar = charLine + word[j];
+                            const charMetrics = this.ctx.measureText(testChar);
+                            
+                            if (charMetrics.width > maxWidth && charLine) {
+                                lines.push(charLine);
+                                charLine = word[j];
+                            } else {
+                                charLine = testChar;
+                            }
+                        }
+                        currentLine = charLine;
+                    }
+                } else {
+                    // 첫 단어가 너무 긴 경우
+                    let charLine = '';
+                    for (let j = 0; j < word.length; j++) {
+                        const testChar = charLine + word[j];
+                        const charMetrics = this.ctx.measureText(testChar);
+                        
+                        if (charMetrics.width > maxWidth && charLine) {
+                            lines.push(charLine);
+                            charLine = word[j];
+                        } else {
+                            charLine = testChar;
+                        }
+                    }
+                    currentLine = charLine;
+                }
+            } else {
+                currentLine = testLine;
+            }
+        }
+        
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+        
+        return lines.length > 0 ? lines : [text];
+    }
+
     drawSpeechBubble(bubble, x, y, isTeacher = false) {
         this.ctx.save();
         
         // 선생님 말풍선은 더 크게
-        const fontSize = isTeacher ? 20 : 13;
-        const padding = isTeacher ? 40 : 24;
-        const bubbleHeight = isTeacher ? 60 : 36;
-        const charWidth = isTeacher ? 14 : 9;
+        const fontSize = isTeacher ? 20 : 14;
+        const padding = isTeacher ? 30 : 20;
+        const lineHeight = isTeacher ? 28 : 20;
+        const maxWidth = isTeacher ? 250 : 200; // 최대 폭 설정 (300 → 250)
         
-        const bubbleWidth = bubble.text.length * charWidth + padding;
+        // 텍스트를 여러 줄로 나누기
+        const lines = this.wrapText(bubble.text, maxWidth, fontSize);
+        
+        // 말풍선 크기 계산 (줄 수에 따라 동적으로)
+        const bubbleWidth = isTeacher ? Math.min(maxWidth + padding * 2, 270) : Math.min(maxWidth + padding * 2, 400); // 교사용: 310 → 320px
+        const bubbleHeight = lines.length * lineHeight + padding * 1.5;
         const bubbleX = x - bubbleWidth/2;
         const bubbleY = y - bubbleHeight - 10;
         
@@ -368,12 +454,16 @@ export class AmongUsAvatarRenderer {
         this.ctx.fill();
         this.ctx.stroke();
         
-        // 텍스트
+        // 여러 줄 텍스트 렌더링
         this.ctx.fillStyle = isTeacher ? '#1a1a1a' : '#333';
         this.ctx.font = `bold ${fontSize}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(bubble.text, x, bubbleY + bubbleHeight/2);
+        
+        const startY = bubbleY + padding;
+        lines.forEach((line, index) => {
+            this.ctx.fillText(line, x, startY + index * lineHeight);
+        });
         
         this.ctx.restore();
     }
@@ -381,10 +471,10 @@ export class AmongUsAvatarRenderer {
     drawTeacherAvatar() {
         if (!this.teacherAvatar) return;
         
-        // 선생님 위치: 하단 중앙 왼쪽 (공지사항이 잘 보이도록)
-        const x = this.canvas.width * 0.30; // 중앙에 더 가깝게 (15% → 30%)
-        const y = this.canvas.height * 0.85 + this.teacherAvatar.bounceOffset; // 하단 85% 위치
-        const scale = 2.0; // 선생님은 훨씬 더 크게 (1.5 → 2.0)
+        // 선생님 위치: QR 코드 카드 위 (좌측 하단)
+        const x = 140; // QR 코드 카드 중앙 (left 40px + width 200px / 2)
+        const y = this.canvas.height - 355 + this.teacherAvatar.bounceOffset; // 위로 200px 추가 이동
+        const scale = 1.8; // 선생님 크기 약간 축소 (2.0 → 1.8)
         
         // 선생님용 특별 색상 (금색)
         const teacherColor = {
@@ -395,11 +485,12 @@ export class AmongUsAvatarRenderer {
         
         this.drawAmongUsCharacter(x, y, teacherColor, 0, scale, false);
         
-        // 선생님 표시 (왕관) - 크기에 맞춰 조정
-        this.drawCrown(x, y - 80);
+        // 선생님 표시 (왕관) - 크기에 맞춰 조정 (머리 위에 자연스럽게)
+        const baseSize = 40 * scale;
+        this.drawCrown(x, y - baseSize * 0.7);
         
-        // 이름
-        this.drawName('선생님', x, y - 95);
+        // 이름 (아바타 머리 위에 자연스럽게)
+        this.drawName('선생님', x, y - baseSize * 1.0);
         
         // 메시지 (더 위쪽에 표시, 선생님 전용 스타일)
         if (this.teacherAvatar.message) {
@@ -453,6 +544,16 @@ export class AmongUsAvatarRenderer {
     setStudentNames(names) {
         for (let i = 0; i < Math.min(names.length, this.avatars.length); i++) {
             this.avatars[i].name = names[i];
+        }
+    }
+
+    // 아바타 색상 변경
+    updateAvatarColor(avatarIndex, colorId) {
+        const avatar = this.avatars[avatarIndex];
+        if (avatar && colorId >= 1 && colorId <= this.colors.length) {
+            const colorIndex = (colorId - 1) % this.colors.length;
+            avatar.color = this.colors[colorIndex];
+            console.log(`🎨 아바타 색상 변경: ${avatar.name} → ${avatar.color.name}`);
         }
     }
 

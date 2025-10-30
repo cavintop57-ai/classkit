@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 import random
 import string
@@ -15,6 +15,8 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 class SessionCreate(BaseModel):
     class_id: Optional[str] = None  # 없으면 자동 생성
     code: Optional[str] = None  # 커스텀 세션 코드 (교사 로그인용)
+    problems: Optional[List[Dict[str, Any]]] = None  # 세션에 사용할 문제 3개
+    student_names: Optional[List[str]] = None  # 학생 명단 (검증용)
 
 class SessionResponse(BaseModel):
     id: str
@@ -96,28 +98,36 @@ async def create_session(
         existing_session = result.scalar_one_or_none()
         
         if existing_session:
-            # 기존 세션이 있으면 만료 시간만 연장
+            # 기존 세션이 있으면 만료 시간 연장 및 문제 업데이트
             existing_session.expires_at = datetime.now() + timedelta(hours=4)
+            if data.problems:
+                existing_session.problems = data.problems
+                print(f"📚 세션 문제 업데이트: {len(data.problems)}개")
+            if data.student_names:
+                existing_session.student_names = data.student_names
+                print(f"👥 세션 학생명단 업데이트: {len(data.student_names)}명")
             await db.commit()
             await db.refresh(existing_session)
             print(f"♻️ 기존 세션 재사용 (만료 시간 연장): {code}")
             
-    # 환경변수에서 도메인 가져오기
-    # 프로덕션: DOMAIN_URL 환경변수 설정 필요
-    # 예: DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
-    domain = os.getenv('DOMAIN_URL', 'https://phpstack-1293143-5917982.cloudwaysapps.com')
-    
-    # QR URL: 모바일 페이지 경로 (학생용)
-    mobile_url = f"{domain}/mobile/?code={existing_session.code}"
-    
-    return SessionResponse(
-        id=str(existing_session.id),
-        code=existing_session.code,
-        class_id=str(existing_session.class_id),
-        started_at=existing_session.started_at,
-        expires_at=existing_session.expires_at,
-        qr_url=mobile_url
-    )
+            # 환경변수에서 도메인 가져오기 (로컬 개발 환경 자동 감지)
+            domain = os.getenv('DOMAIN_URL')
+            if not domain:
+                # 로컬 개발 환경: localhost 사용
+                domain = 'http://localhost:5173'
+                print(f"🏠 로컬 개발 모드: {domain}")
+            
+            # QR URL: 모바일 페이지 경로 (학생용)
+            mobile_url = f"{domain}/mobile/?code={existing_session.code}"
+            
+            return SessionResponse(
+                id=str(existing_session.id),
+                code=existing_session.code,
+                class_id=str(existing_session.class_id),
+                started_at=existing_session.started_at,
+                expires_at=existing_session.expires_at,
+                qr_url=mobile_url
+            )
     else:
         # 랜덤 세션 코드 생성
         max_attempts = 10
@@ -141,6 +151,8 @@ async def create_session(
     session = SessionModel(
         class_id=class_row.id,
         code=code,
+        problems=data.problems if data.problems else None,
+        student_names=data.student_names if data.student_names else None,
         expires_at=expires_at
     )
     
@@ -148,12 +160,17 @@ async def create_session(
     await db.commit()
     await db.refresh(session)
     
-    print(f"✅ 세션 생성 완료: {session.code}")
+    if data.problems:
+        print(f"✅ 세션 생성 완료 (문제 {len(data.problems)}개 포함): {session.code}")
+    else:
+        print(f"✅ 세션 생성 완료: {session.code}")
     
-    # 환경변수에서 도메인 가져오기
-    # 프로덕션: DOMAIN_URL 환경변수 설정 필요
-    # 예: DOMAIN_URL=https://phpstack-1293143-5917982.cloudwaysapps.com
-    domain = os.getenv('DOMAIN_URL', 'https://phpstack-1293143-5917982.cloudwaysapps.com')
+    # 환경변수에서 도메인 가져오기 (로컬 개발 환경 자동 감지)
+    domain = os.getenv('DOMAIN_URL')
+    if not domain:
+        # 로컬 개발 환경: localhost 사용
+        domain = 'http://localhost:5173'
+        print(f"🏠 로컬 개발 모드: {domain}")
     
     # QR URL: 모바일 페이지 경로 (학생용)
     mobile_url = f"{domain}/mobile/?code={session.code}"

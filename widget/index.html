@@ -11,14 +11,9 @@
   <div id="app">
     <!-- 모드 전환 버튼 -->
     <div class="mode-controls">
-      <button class="mode-btn active" id="btn-break" data-mode="break">
+      <button class="mode-btn active" id="btn-classmode" data-mode="break">
         <span class="mode-emoji">🎮</span>
         <span class="mode-name">쉬는시간</span>
-        <span class="mode-shortcut">F1</span>
-      </button>
-      <button class="mode-btn" id="btn-class" data-mode="class">
-        <span class="mode-emoji">📚</span>
-        <span class="mode-name">수업시간</span>
         <span class="mode-shortcut">F1</span>
       </button>
       <button class="mode-btn" id="btn-work" data-mode="work">
@@ -40,22 +35,16 @@
         <span class="mode-emoji">🚪</span>
         <span class="mode-name">로그아웃</span>
       </button>
-      <div class="session-code" id="session-code-btn">
-        <span class="session-emoji">🏷️</span>
-        <div class="session-label">우리반 코드</div>
-        <div class="session-value" id="session-code">연결 중...</div>
-      </div>
-      <div class="teacher-info" id="teacher-info">
-        <span class="teacher-emoji">👨‍🏫</span>
-        <div class="teacher-label">담임교사</div>
-        <div class="teacher-name" id="teacher-name">-</div>
-      </div>
+      <button class="mode-btn" id="btn-timer">
+        <span class="mode-emoji">⏱️</span>
+        <span class="mode-name">타이머</span>
+      </button>
     </div>
 
     <!-- 타이머 카드 -->
     <div class="timer-card" id="timer-card">
       <div class="timer-header">
-        <span class="timer-title">⏱️ 쉬는시간</span>
+        <span class="timer-title">⏱️ 타이머</span>
       </div>
       <div class="timer-adjust">
         <button class="timer-arrow" id="timer-increase" title="1분 추가">▲</button>
@@ -83,9 +72,62 @@
       <div class="qr-url" id="qr-url">연결 중...</div>
     </div>
 
+    <!-- 시간표 카드 -->
+    <div class="timetable-card" id="timetable-card">
+      <div class="timetable-header">
+        <span class="timetable-title">📅 시간표</span>
+        <span class="timetable-date" id="timetable-date">월요일</span>
+      </div>
+      <div class="timetable-body" id="timetable-body">
+        <div class="timetable-empty">시간표를 등록해주세요</div>
+      </div>
+    </div>
+
+    <!-- 스톱워치 카드 (수업시간 모드) -->
+    <div class="stopwatch-card" id="stopwatch-card">
+      <div class="stopwatch-header">
+        <span class="stopwatch-title">⏱️ 스톱워치</span>
+      </div>
+      <div class="stopwatch-display" id="stopwatch">00:00.00</div>
+      <div class="stopwatch-controls">
+        <button class="stopwatch-btn stopwatch-start" id="stopwatch-start-btn">
+          <span class="stopwatch-btn-icon">▶️</span>
+          <span class="stopwatch-btn-text">시작</span>
+        </button>
+        <button class="stopwatch-btn stopwatch-reset" id="stopwatch-reset-btn">
+          <span class="stopwatch-btn-icon">🔄</span>
+          <span class="stopwatch-btn-text">초기화</span>
+        </button>
+        <button class="stopwatch-btn stopwatch-lap" id="stopwatch-lap-btn">
+          <span class="stopwatch-btn-icon">📍</span>
+          <span class="stopwatch-btn-text">랩</span>
+        </button>
+      </div>
+      <div class="stopwatch-laps" id="stopwatch-laps"></div>
+    </div>
+
+    <!-- 판서 도구 (수업시간 모드) -->
+    <div class="board-card" id="board-card">
+      <div class="board-header">
+        <span class="board-title">✏️ 판서 도구</span>
+        <div class="board-tools">
+          <button class="tool-btn" id="pen-btn" data-tool="pen" title="펜">✏️</button>
+          <button class="tool-btn" id="eraser-btn" data-tool="eraser" title="지우개">🧹</button>
+          <input type="color" id="color-picker" value="#ffffff" title="색상 선택">
+          <input type="range" id="size-slider" min="1" max="20" value="3" title="두께">
+          <button class="tool-btn" id="clear-btn" title="전체 지우기">🗑️</button>
+          <button class="tool-btn" id="save-btn" title="이미지 저장">💾</button>
+        </div>
+      </div>
+      <canvas id="board-canvas"></canvas>
+    </div>
+
     <!-- 아바타 캔버스 -->
     <canvas id="avatar-canvas"></canvas>
   </div>
+  
+  <!-- 배경 타이머 디스플레이 (우주 모드) -->
+  <div class="cosmic-timer-display" id="cosmic-timer-display">10:00</div>
 
   <!-- 우리반 관리 모달 -->
   <div class="modal-overlay" id="manage-modal">
@@ -149,26 +191,74 @@
 강예은
 오민재</textarea>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 우리반 코드 확대 모달 -->
-  <div class="modal-overlay" id="code-modal">
-    <div class="modal-content code-modal">
-      <div class="modal-header">
-        <h2>🏷️ 우리반 코드</h2>
-        <button class="modal-close" id="code-modal-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="code-display">
-          <div class="code-label">우리반 코드</div>
-          <div class="code-value" id="modal-session-code">A12345</div>
-          <div class="code-description">학생들이 이 코드로 접속할 수 있습니다</div>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" id="copy-code-btn">📋 복사하기</button>
-          <button class="btn btn-secondary" id="close-code-btn">닫기</button>
+        
+        <!-- 시간표 입력 -->
+        <div class="form-group">
+          <label>📅 시간표</label>
+          <div class="timetable-container">
+            <table class="timetable-input">
+              <thead>
+                <tr>
+                  <th>교시</th>
+                  <th>월</th>
+                  <th>화</th>
+                  <th>수</th>
+                  <th>목</th>
+                  <th>금</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1교시</td>
+                  <td><input type="text" id="mon-1" placeholder="국어"></td>
+                  <td><input type="text" id="tue-1" placeholder="수학"></td>
+                  <td><input type="text" id="wed-1" placeholder="영어"></td>
+                  <td><input type="text" id="thu-1" placeholder="과학"></td>
+                  <td><input type="text" id="fri-1" placeholder="사회"></td>
+                </tr>
+                <tr>
+                  <td>2교시</td>
+                  <td><input type="text" id="mon-2" placeholder="수학"></td>
+                  <td><input type="text" id="tue-2" placeholder="국어"></td>
+                  <td><input type="text" id="wed-2" placeholder="체육"></td>
+                  <td><input type="text" id="thu-2" placeholder="음악"></td>
+                  <td><input type="text" id="fri-2" placeholder="미술"></td>
+                </tr>
+                <tr>
+                  <td>3교시</td>
+                  <td><input type="text" id="mon-3" placeholder=""></td>
+                  <td><input type="text" id="tue-3" placeholder=""></td>
+                  <td><input type="text" id="wed-3" placeholder=""></td>
+                  <td><input type="text" id="thu-3" placeholder=""></td>
+                  <td><input type="text" id="fri-3" placeholder=""></td>
+                </tr>
+                <tr>
+                  <td>4교시</td>
+                  <td><input type="text" id="mon-4" placeholder=""></td>
+                  <td><input type="text" id="tue-4" placeholder=""></td>
+                  <td><input type="text" id="wed-4" placeholder=""></td>
+                  <td><input type="text" id="thu-4" placeholder=""></td>
+                  <td><input type="text" id="fri-4" placeholder=""></td>
+                </tr>
+                <tr>
+                  <td>5교시</td>
+                  <td><input type="text" id="mon-5" placeholder=""></td>
+                  <td><input type="text" id="tue-5" placeholder=""></td>
+                  <td><input type="text" id="wed-5" placeholder=""></td>
+                  <td><input type="text" id="thu-5" placeholder=""></td>
+                  <td><input type="text" id="fri-5" placeholder=""></td>
+                </tr>
+                <tr>
+                  <td>6교시</td>
+                  <td><input type="text" id="mon-6" placeholder=""></td>
+                  <td><input type="text" id="tue-6" placeholder=""></td>
+                  <td><input type="text" id="wed-6" placeholder=""></td>
+                  <td><input type="text" id="thu-6" placeholder=""></td>
+                  <td><input type="text" id="fri-6" placeholder=""></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

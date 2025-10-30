@@ -70,23 +70,23 @@ body[data-mode-changing] {
   top: 20px;
   left: 20px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   z-index: 1000;
 }
 
 .mode-btn {
   background: rgba(255, 255, 255, 0.15);
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 12px 20px;
+  border-radius: 10px;
+  padding: 8px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .mode-btn:hover {
@@ -103,38 +103,38 @@ body[data-mode-changing] {
 }
 
 .mode-emoji {
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1;
 }
 
 .mode-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
   color: var(--color-chalk);
 }
 
 .mode-shortcut {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(245, 245, 220, 0.7);
   background: rgba(0, 0, 0, 0.2);
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
 }
 
 /* 전체화면 버튼 (모드 버튼과 동일한 스타일) */
 .fullscreen-btn {
   background: rgba(255, 255, 255, 0.15);
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 12px 20px;
+  border-radius: 10px;
+  padding: 8px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .fullscreen-btn:hover {
@@ -151,22 +151,22 @@ body[data-mode-changing] {
 }
 
 .fullscreen-emoji {
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1;
 }
 
 .fullscreen-name {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
   color: var(--color-chalk);
 }
 
 .fullscreen-shortcut {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(245, 245, 220, 0.7);
   background: rgba(0, 0, 0, 0.2);
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
 }
 
 /* 전체화면 시 버튼 자동 숨김 (마우스 이동 시 나타남) */
@@ -268,6 +268,7 @@ body:fullscreen:hover .mode-controls {
   height: 100%;
   pointer-events: none;
   background: transparent;
+  z-index: 100;
 }
 
 [data-mode="class"] #avatar-canvas,
@@ -339,6 +340,107 @@ body:fullscreen:hover .mode-controls {
   overflow: hidden;
   transition: all 0.3s ease;
   z-index: 999;
+  display: none; /* 기본적으로 숨김 */
+}
+
+/* 타이머 표시 상태 */
+.timer-card.show {
+  display: block;
+}
+
+/* 타이머 오버레이 모드 (반투명 중앙 표시) */
+.timer-card.overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  bottom: auto;
+  right: auto;
+  width: 350px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+}
+
+.timer-card.overlay .timer-display {
+  font-size: 64px;
+  padding: 35px 20px;
+}
+
+/* 우주 애니메이션 삭제됨 - 아바타가 보이도록 */
+
+/* 타이머 실행 중 - 카드 숨김 */
+body.timer-cosmic-mode .timer-card {
+  display: none !important;
+}
+
+/* 배경 타이머 디스플레이 */
+.cosmic-timer-display {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 120px;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-shadow:
+    0 0 20px rgba(100, 200, 255, 1),
+    0 0 40px rgba(100, 200, 255, 0.8),
+    0 0 60px rgba(100, 200, 255, 0.6),
+    0 0 100px rgba(100, 150, 255, 0.4);
+  z-index: 200;
+  pointer-events: none;
+  animation: timerPulse 2s infinite ease-in-out;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+body.timer-cosmic-mode .cosmic-timer-display {
+  opacity: 1;
+}
+
+/* 배경 타이머 색상 변경 클래스 */
+.cosmic-timer-display.warning {
+  color: #FFA726;
+  text-shadow:
+    0 0 20px rgba(255, 167, 38, 1),
+    0 0 40px rgba(255, 167, 38, 0.8),
+    0 0 60px rgba(255, 167, 38, 0.6),
+    0 0 100px rgba(255, 167, 38, 0.4);
+}
+
+.cosmic-timer-display.danger {
+  color: #F44336;
+  text-shadow:
+    0 0 20px rgba(244, 67, 54, 1),
+    0 0 40px rgba(244, 67, 54, 0.8),
+    0 0 60px rgba(244, 67, 54, 0.6),
+    0 0 100px rgba(244, 67, 54, 0.4);
+}
+
+@keyframes timerPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    text-shadow:
+      0 0 10px rgba(100, 200, 255, 1),
+      0 0 20px rgba(100, 200, 255, 0.8),
+      0 0 40px rgba(100, 200, 255, 0.6),
+      0 0 80px rgba(100, 150, 255, 0.4);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.02);
+    text-shadow:
+      0 0 15px rgba(100, 200, 255, 1),
+      0 0 30px rgba(100, 200, 255, 0.9),
+      0 0 60px rgba(100, 200, 255, 0.7),
+      0 0 100px rgba(100, 150, 255, 0.5);
+  }
+}
+
+/* 수업시간 모드 - 타이머 카드도 숨김 */
+[data-mode="class"] .timer-card {
+  display: none;
 }
 
 .timer-header {
@@ -468,12 +570,15 @@ body:fullscreen:hover .mode-controls {
 
 /* Class 모드: 타이머 카드 확대 & 중앙 배치 */
 [data-mode="class"] .timer-card {
+  display: block !important; /* 수업시간 모드에서는 항상 표시 */
   top: 50%;
   left: 50%;
   bottom: auto;
   right: auto;
   transform: translate(-50%, -50%) scale(1.3);
   width: 350px;
+  background: #FFFFFF;
+  opacity: 1;
 }
 
 [data-mode="class"] .timer-display {
@@ -481,10 +586,299 @@ body:fullscreen:hover .mode-controls {
   padding: 40px 20px;
 }
 
-/* Work 모드: 타이머 축소 */
+/* Work 모드: 타이머 숨김 */
 [data-mode="work"] .timer-card {
-  opacity: 0.5;
-  transform: scale(0.8);
+  display: none;
+}
+
+/* 스톱워치 카드 */
+.stopwatch-card {
+  position: fixed;
+  top: 120px;
+  left: 40px;
+  width: 280px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: none; /* 기본 숨김 */
+}
+
+/* 수업시간 모드에서만 표시 */
+[data-mode="class"] .stopwatch-card {
+  display: block;
+}
+
+.stopwatch-header {
+  background: #42A5F5;
+  padding: 12px;
+  text-align: center;
+}
+
+.stopwatch-title {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.stopwatch-display {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  padding: 30px 20px;
+  color: #333333;
+  font-family: 'SF Pro Display', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, monospace;
+  letter-spacing: 2px;
+}
+
+.stopwatch-controls {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  background: #F5F5F5;
+}
+
+.stopwatch-btn {
+  flex: 1;
+  background: #FFFFFF;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stopwatch-btn:hover {
+  background: #F5F5F5;
+  border-color: #BDBDBD;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stopwatch-btn-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.stopwatch-btn-text {
+  font-size: 11px;
+  font-weight: bold;
+  color: #666;
+}
+
+.stopwatch-laps {
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+.stopwatch-lap-item {
+  padding: 4px 0;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+/* 판서 도구 카드 */
+.board-card {
+  position: fixed;
+  top: 120px;
+  right: 40px;
+  width: 600px;
+  height: 500px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: none; /* 기본 숨김 */
+  flex-direction: column;
+}
+
+/* 수업시간 모드에서만 표시 */
+[data-mode="class"] .board-card {
+  display: flex;
+}
+
+.board-header {
+  background: #66BB6A;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.board-title {
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.board-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tool-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tool-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.tool-btn.active {
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#color-picker {
+  width: 40px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#size-slider {
+  width: 80px;
+  cursor: pointer;
+}
+
+#board-canvas {
+  flex: 1;
+  background: #2C3E50;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* Break 모드 & Work 모드: QR 코드와 아바타만 표시 */
+[data-mode="break"] .stopwatch-card,
+[data-mode="break"] .board-card,
+[data-mode="work"] .stopwatch-card,
+[data-mode="work"] .board-card,
+[data-mode="work"] .qr-card {
+  display: none;
+}
+
+/* 수업시간 모드: QR 코드와 아바타 숨김 */
+[data-mode="class"] .qr-card {
+  display: none;
+}
+
+/* 시간표 카드 */
+.timetable-card {
+  position: fixed;
+  top: 640px;
+  right: 40px;
+  width: 200px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.timetable-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timetable-title {
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.timetable-date {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.timetable-body {
+  padding: 8px;
+  max-height: none;
+  overflow-y: visible;
+}
+
+.timetable-empty {
+  text-align: center;
+  color: #999;
+  font-size: 10px;
+  padding: 15px 5px;
+}
+
+.timetable-period {
+  display: flex;
+  align-items: center;
+  padding: 5px 6px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  background: #F5F5F5;
+  transition: all 0.2s ease;
+}
+
+.timetable-period:hover {
+  background: #E8E8E8;
+  transform: translateX(2px);
+}
+
+.timetable-period.current {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.period-number {
+  font-size: 9px;
+  font-weight: bold;
+  color: #666;
+  min-width: 35px;
+}
+
+.timetable-period.current .period-number {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.period-subject {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.timetable-period.current .period-subject {
+  color: #FFFFFF;
+}
+
+/* Work 모드에서 시간표 숨김 */
+[data-mode="work"] .timetable-card {
+  display: none;
+}
+
+/* 수업시간 모드에서 시간표 숨김 */
+[data-mode="class"] .timetable-card {
+  display: none;
 }
 
 /* 모달 스타일 */
@@ -707,6 +1101,71 @@ body:fullscreen:hover .mode-controls {
   resize: vertical;
   min-height: 120px;
   font-family: inherit;
+}
+
+/* 시간표 입력 테이블 */
+.timetable-container {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.timetable-input {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.timetable-input th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #FFFFFF;
+  padding: 10px 6px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 12px;
+}
+
+.timetable-input th:first-child {
+  border-radius: 8px 0 0 0;
+  width: 60px;
+}
+
+.timetable-input th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.timetable-input td {
+  padding: 6px;
+  text-align: center;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.timetable-input td:first-child {
+  background: #F5F5F5;
+  font-weight: 600;
+  color: #666;
+  font-size: 11px;
+}
+
+.timetable-input input[type="text"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #E0E0E0;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.timetable-input input[type="text"]:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #F8F9FF;
+}
+
+.timetable-input input[type="text"]::placeholder {
+  color: #CCC;
+  font-size: 11px;
 }
 
 .form-actions {

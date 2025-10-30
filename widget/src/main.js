@@ -24,11 +24,11 @@ import { WebSocketManager } from './websocket.js';
       return;
     }
     
-    // 교사 이름 표시
-    const teacherNameEl = document.getElementById('teacher-name');
-    if (teacherNameEl) {
-      teacherNameEl.textContent = data.teacherName;
-    }
+    // 교사 이름 표시 (UI 삭제됨 - 주석 처리)
+    // const teacherNameEl = document.getElementById('teacher-name');
+    // if (teacherNameEl) {
+    //   teacherNameEl.textContent = data.teacherName;
+    // }
     
     console.log('✅ 로그인 확인:', data.teacherName, data.sessionCode);
   } catch (error) {
@@ -50,8 +50,20 @@ const modeNames = {
 function setMode(newMode) {
   console.log(`Mode: ${currentMode} → ${newMode}`);
   
+  const previousMode = currentMode;
+  
   // 전환 애니메이션
   document.body.dataset.modeChanging = 'true';
+  
+  // 타이머 오버레이 닫기 (수업시간 모드가 아닌 경우)
+  const timerCard = document.getElementById('timer-card');
+  const timerBtn = document.getElementById('btn-timer');
+  if (timerCard && newMode !== 'class') {
+    timerCard.classList.remove('show', 'overlay');
+    if (timerBtn) {
+      timerBtn.classList.remove('active');
+    }
+  }
   
   setTimeout(() => {
     currentMode = newMode;
@@ -64,9 +76,37 @@ function setMode(newMode) {
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.classList.remove('active');
     });
-    document.getElementById(`btn-${newMode}`).classList.add('active');
+    
+    // 업무 모드는 별도 버튼, 쉬는시간/수업시간은 통합 버튼
+    if (newMode === 'work') {
+      document.getElementById('btn-work').classList.add('active');
+    } else {
+      // 쉬는시간/수업시간 모드 토글 버튼
+      const btnClassMode = document.getElementById('btn-classmode');
+      if (btnClassMode) {
+        btnClassMode.classList.add('active');
+        // 버튼 텍스트와 이모지 업데이트
+        if (newMode === 'break') {
+          btnClassMode.querySelector('.mode-emoji').textContent = '🎮';
+          btnClassMode.querySelector('.mode-name').textContent = '쉬는시간';
+        } else if (newMode === 'class') {
+          btnClassMode.querySelector('.mode-emoji').textContent = '📚';
+          btnClassMode.querySelector('.mode-name').textContent = '수업시간';
+        }
+      }
+    }
     
     document.body.dataset.modeChanging = 'false';
+    
+    // 수업시간 모드로 전환 시 타이머 자동 시작
+    if (newMode === 'class' && !isTimerRunning) {
+      startTimer();
+    }
+    
+    // 수업시간 모드에서 나갈 때 타이머 일시정지
+    if (previousMode === 'class' && newMode !== 'class' && isTimerRunning) {
+      pauseTimer();
+    }
     
     // 렌더링 루프 제어
     if (newMode === 'work') {
@@ -81,7 +121,14 @@ function toggleMode(type) {
   if (type === 'break-class') {
     setMode(currentMode === 'break' ? 'class' : 'break');
   } else if (type === 'class-work') {
-    setMode(currentMode === 'class' ? 'work' : 'class');
+    // 업무 모드 전환
+    if (currentMode === 'class') {
+      setMode('work');
+    } else if (currentMode === 'work') {
+      setMode('class');
+    } else {
+      setMode('work');
+    }
   }
 }
 
@@ -98,8 +145,16 @@ let isTimerRunning = false;
 function updateTimerDisplay() {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
-  document.getElementById('timer').textContent = 
-    `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  const timeString = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  
+  // 타이머 카드 업데이트
+  document.getElementById('timer').textContent = timeString;
+  
+  // 배경 타이머 디스플레이 업데이트
+  const cosmicTimer = document.getElementById('cosmic-timer-display');
+  if (cosmicTimer) {
+    cosmicTimer.textContent = timeString;
+  }
 }
 
 function startTimer() {
@@ -111,6 +166,17 @@ function startTimer() {
   btn.querySelector('.timer-btn-icon').textContent = '⏸️';
   btn.querySelector('.timer-btn-text').textContent = '일시정지';
   
+  // 상단 타이머 버튼 텍스트 변경
+  const topTimerBtn = document.getElementById('btn-timer');
+  if (topTimerBtn) {
+    topTimerBtn.querySelector('.mode-emoji').textContent = '🛑';
+    topTimerBtn.querySelector('.mode-name').textContent = '종료';
+  }
+  
+  // 우주 테마 활성화
+  document.body.classList.add('timer-cosmic-mode');
+  console.log('🌌 우주 테마 활성화');
+  
   timerInterval = setInterval(() => {
     if (totalSeconds > 0) {
       totalSeconds--;
@@ -118,10 +184,18 @@ function startTimer() {
       
       // 타이머 색상 변경 (3분 이하면 노란색, 1분 이하면 빨간색)
       const timerDisplay = document.getElementById('timer');
+      const cosmicTimer = document.getElementById('cosmic-timer-display');
+      
       if (totalSeconds <= 60) {
         timerDisplay.style.color = '#F44336'; // 빨간색
+        cosmicTimer.classList.add('danger');
+        cosmicTimer.classList.remove('warning');
       } else if (totalSeconds <= 180) {
         timerDisplay.style.color = '#FFA726'; // 주황색
+        cosmicTimer.classList.add('warning');
+        cosmicTimer.classList.remove('danger');
+      } else {
+        cosmicTimer.classList.remove('warning', 'danger');
       }
     } else {
       // 타이머 종료
@@ -130,6 +204,15 @@ function startTimer() {
       btn.classList.remove('running');
       btn.querySelector('.timer-btn-icon').textContent = '🔄';
       btn.querySelector('.timer-btn-text').textContent = '다시 시작';
+      
+      // 우주 테마 비활성화
+      document.body.classList.remove('timer-cosmic-mode');
+      
+      // 배경 타이머 색상 초기화
+      const cosmicTimer = document.getElementById('cosmic-timer-display');
+      cosmicTimer.classList.remove('warning', 'danger');
+      
+      console.log('🌌 우주 테마 비활성화');
       console.log('⏰ 타이머 종료!');
     }
   }, 1000);
@@ -144,6 +227,17 @@ function pauseTimer() {
   btn.classList.remove('running');
   btn.querySelector('.timer-btn-icon').textContent = '▶️';
   btn.querySelector('.timer-btn-text').textContent = '계속하기';
+  
+  // 상단 타이머 버튼 텍스트 복원
+  const topTimerBtn = document.getElementById('btn-timer');
+  if (topTimerBtn) {
+    topTimerBtn.querySelector('.mode-emoji').textContent = '⏱️';
+    topTimerBtn.querySelector('.mode-name').textContent = '타이머';
+  }
+  
+  // 우주 테마 비활성화
+  document.body.classList.remove('timer-cosmic-mode');
+  console.log('🌌 우주 테마 비활성화 (일시정지)');
 }
 
 function resetTimer() {
@@ -156,6 +250,21 @@ function resetTimer() {
   
   // 색상 초기화
   document.getElementById('timer').style.color = '#333333';
+  
+  // 배경 타이머 색상 초기화
+  const cosmicTimer = document.getElementById('cosmic-timer-display');
+  cosmicTimer.classList.remove('warning', 'danger');
+  
+  // 상단 타이머 버튼 텍스트 복원
+  const topTimerBtn = document.getElementById('btn-timer');
+  if (topTimerBtn) {
+    topTimerBtn.querySelector('.mode-emoji').textContent = '⏱️';
+    topTimerBtn.querySelector('.mode-name').textContent = '타이머';
+  }
+  
+  // 우주 테마 비활성화 (pauseTimer에서도 호출되지만 명시적으로)
+  document.body.classList.remove('timer-cosmic-mode');
+  console.log('🌌 우주 테마 비활성화 (초기화)');
 }
 
 function toggleTimer() {
@@ -199,48 +308,49 @@ const learningCard = new LearningCard(canvas);
   
   console.log('✅ 우주 배경 로드 완료 (Among Us 스타일)');
   
-  // 테스트용 아바타 추가 (Among Us)
-  avatarRenderer.addAvatar(0, '김철수');
-  avatarRenderer.addAvatar(1, '이영희');
-  avatarRenderer.addAvatar(2, '박민준');
-  avatarRenderer.addAvatar(3, '최서연');
-  avatarRenderer.addAvatar(4, '정도윤');
-  avatarRenderer.addAvatar(5, '한소영');
-  avatarRenderer.addAvatar(6, '윤태호');
-  avatarRenderer.addAvatar(7, '임다은');
-  
-  // 선생님 설정 (금색 Among Us)
-  avatarRenderer.setTeacher('우주 탐험을 시작합니다! 🚀');
+  // 아바타는 loadClassData()에서 로드됨 (초기화 섹션 참조)
 })();
 
-// 초기 문제 로드 (3개 모두 표시)
+// 초기 문제 로드 (3개 모두 표시 - 위젯용)
 const initialProblems = [
   {
-    id: '1',
-    word: 'clearly',
-    meaning: '명확하게, 똑똑하게',
-    example: 'Please speak clearly so everyone can hear you.',
-    example_ko: '모든 사람이 들을 수 있도록 명확하게 말해주세요.',
+    id: 'sample-1',
+    word: 'happy',
+    meaning: '행복한, 기쁜',
+    example: 'I am happy today.',
+    example_ko: '나는 오늘 행복해요.',
     type: 'vocabulary',
-    difficulty: 3,
-    grade: '5-1'
+    difficulty: 2,
+    grade: '5-1',
+    // 학생용 문제 데이터
+    student_question: 'happy의 뜻은?',
+    student_answer: '행복한',
+    student_hint: '기쁜 마음을 나타내는 단어'
   },
   {
-    id: '2',
-    question: '속담: 티끌 모아 ______',
-    hint: '작은 것이 모여 큰 것을 이룸',
+    id: 'sample-2',
+    question: '속담: 티끌 모아 태산',
+    hint: '작은 것이 모이면 큰 것이 됨',
     type: 'proverb',
     difficulty: 2,
-    grade: '5-1'
+    grade: '5-1',
+    // 학생용 문제 데이터
+    student_question: '티끌 모아 _____ (빈칸에 들어갈 말은?)',
+    student_answer: '태산',
+    student_hint: '작은 것이 모여 큰 것을 이룸'
   },
   {
-    id: '3',
+    id: 'sample-3',
     word: '끈기',
     meaning: '어려운 일을 포기하지 않고 계속하는 마음',
     example: '끈기 있게 노력하면 반드시 성공할 수 있다.',
     type: 'vocab',
     difficulty: 2,
-    grade: '5-1'
+    grade: '5-1',
+    // 학생용 문제 데이터
+    student_question: '어려운 일을 포기하지 않고 계속하는 마음',
+    student_answer: '끈기',
+    student_hint: '인내심과 관련된 단어'
   },
 ];
 
@@ -309,9 +419,18 @@ function stopRenderLoop() {
   }
 }
 
-// API 설정
-const API_BASE = 'https://phpstack-1293143-5917982.cloudwaysapps.com/api';
-const WS_BASE = 'wss://phpstack-1293143-5917982.cloudwaysapps.com';
+// API 설정 (환경 자동 감지)
+const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = isLocalDevelopment 
+  ? 'http://localhost:8000/api'
+  : 'https://phpstack-1293143-5917982.cloudwaysapps.com/api';
+const WS_BASE = isLocalDevelopment
+  ? 'ws://localhost:8000'
+  : 'wss://phpstack-1293143-5917982.cloudwaysapps.com';
+
+console.log(`🌐 환경: ${isLocalDevelopment ? '로컬 개발' : '프로덕션'}`);
+console.log(`📡 API: ${API_BASE}`);
+console.log(`🔌 WebSocket: ${WS_BASE}`);
 
 // 세션 관리
 let currentSession = null;
@@ -387,7 +506,7 @@ async function initSession() {
       console.log('♻️ 기존 세션 재사용:', savedSession.code);
       
       // UI 업데이트
-      document.getElementById('session-code').textContent = savedSession.code;
+      // document.getElementById('session-code').textContent = savedSession.code; // UI 삭제됨
       updateQRCode(savedSession.qr_url);
       
       // WebSocket 연결
@@ -411,9 +530,41 @@ async function createSessionWithCode(sessionCode) {
   try {
     // 백엔드에서 해당 세션 코드로 세션 생성 요청
     const savedClassData = loadClassData();
-    const requestBody = savedClassData?.classId 
-      ? { class_id: savedClassData.classId, code: sessionCode }
-      : { code: sessionCode };
+    
+    // 현재 표시된 문제 3개를 학생용 형식으로 변환
+    const currentProblems = learningCard.problems.map(p => ({
+      id: p.id,
+      type: p.type,
+      // 학생용 문제 데이터 사용 (있으면), 없으면 기본값
+      question: p.student_question || p.question || p.word,
+      answer: p.student_answer || p.answer || p.meaning,
+      hint: p.student_hint || p.hint,
+      difficulty: p.difficulty,
+      grade: p.grade
+    }));
+    
+    // 학생 명단 추출
+    let studentNames = null;
+    if (savedClassData?.studentNames) {
+      const names = savedClassData.studentNames.split('\n')
+        .map(name => name.trim())
+        .filter(name => name.length > 0);
+      if (names.length > 0) {
+        studentNames = names;
+      }
+    }
+    
+    const requestBody = {
+      code: sessionCode,
+      problems: currentProblems,
+      ...(savedClassData?.classId && { class_id: savedClassData.classId }),
+      ...(studentNames && { student_names: studentNames })
+    };
+    
+    console.log('📚 세션 생성 (문제 포함):', currentProblems.length, '개');
+    if (studentNames) {
+      console.log('👥 세션 생성 (학생명단 포함):', studentNames.length, '명');
+    }
     
     const response = await fetch(`${API_BASE}/sessions`, {
       method: 'POST',
@@ -434,7 +585,7 @@ async function createSessionWithCode(sessionCode) {
     console.log('✅ 교사 세션 생성:', session.code);
     
     // UI 업데이트
-    document.getElementById('session-code').textContent = session.code;
+    // document.getElementById('session-code').textContent = session.code; // UI 삭제됨
     
     // QR 코드 생성 및 표시
     updateQRCode(session.qr_url);
@@ -456,7 +607,7 @@ async function createSessionWithCode(sessionCode) {
     };
     
     // UI 업데이트
-    document.getElementById('session-code').textContent = sessionCode;
+    // document.getElementById('session-code').textContent = sessionCode; // UI 삭제됨
     document.getElementById('qr-url').textContent = '로컬 모드 (오프라인)';
     document.getElementById('qr-code').innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">📴<br>오프라인 모드</div>';
     
@@ -497,7 +648,7 @@ async function createSession() {
     console.log('✅ 온라인 세션 생성:', session.code);
     
     // UI 업데이트
-    document.getElementById('session-code').textContent = session.code;
+    // document.getElementById('session-code').textContent = session.code; // UI 삭제됨
     
     // QR 코드 생성 및 표시
     updateQRCode(session.qr_url);
@@ -520,7 +671,7 @@ async function createSession() {
     };
     
     // UI 업데이트
-    document.getElementById('session-code').textContent = localSessionCode;
+    // document.getElementById('session-code').textContent = localSessionCode; // UI 삭제됨
     document.getElementById('qr-url').textContent = '로컬 모드 (오프라인)';
     document.getElementById('qr-code').innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">📴<br>오프라인 모드</div>';
     
@@ -549,14 +700,34 @@ function generateLocalSessionCode() {
 }
 
 /**
- * localStorage에서 우리반 데이터 불러오기
+ * 교사 키 생성 (학교명 + 교사명)
+ */
+function getTeacherKey() {
+  try {
+    const loginData = JSON.parse(localStorage.getItem('teacherLoginData'));
+    if (loginData && loginData.schoolName && loginData.teacherName) {
+      // 안전한 키 생성 (특수문자 제거)
+      const key = `${loginData.schoolName}_${loginData.teacherName}`.replace(/[^a-zA-Z0-9가-힣_]/g, '');
+      return key;
+    }
+  } catch (error) {
+    console.error('❌ 교사 키 생성 오류:', error);
+  }
+  return 'default'; // 기본값 (로그인 정보 없을 때)
+}
+
+/**
+ * localStorage에서 우리반 데이터 불러오기 (교사별)
  */
 function loadClassData() {
   try {
-    const savedData = localStorage.getItem('classData');
+    const teacherKey = getTeacherKey();
+    const storageKey = `classData_${teacherKey}`;
+    const savedData = localStorage.getItem(storageKey);
+    
     if (savedData) {
       const classData = JSON.parse(savedData);
-      console.log('📂 저장된 우리반 정보 불러오기:', classData);
+      console.log(`📂 [${teacherKey}] 저장된 우리반 정보 불러오기:`, classData);
       
       // 폼에 데이터 채우기
       document.getElementById('school-name').value = classData.schoolName || '';
@@ -571,7 +742,7 @@ function loadClassData() {
       
       return classData;
     } else {
-      console.log('📭 저장된 우리반 정보 없음');
+      console.log(`📭 [${teacherKey}] 저장된 우리반 정보 없음`);
       return null;
     }
   } catch (error) {
@@ -584,16 +755,26 @@ function loadClassData() {
  * 우리반 데이터를 화면에 적용
  */
 function applyClassData(classData) {
+  // 기존 학생 아바타 제거 (선생님은 유지)
+  avatarRenderer.avatars = [];
+  
   // 선생님 메시지 설정
   if (classData.todayMessage && classData.todayMessage.trim()) {
     avatarRenderer.setTeacher(classData.todayMessage.trim());
+    console.log('👨‍🏫 교사 메시지 설정:', classData.todayMessage.trim());
+  } else {
+    // 메시지가 없으면 기본 메시지
+    avatarRenderer.setTeacher('우주 탐험을 시작합니다!');
   }
   
-  // 학생 이름 설정 및 아바타 생성
+  // 학생 이름으로 아바타 생성
   if (classData.studentNames) {
     const names = classData.studentNames.split('\n').filter(name => name.trim());
     if (names.length > 0) {
-      avatarRenderer.setStudentNames(names);
+      // 아바타 생성 (최대 12개)
+      names.slice(0, 12).forEach((name, index) => {
+        avatarRenderer.addAvatar(index, name);
+      });
       console.log('👥 학생 아바타 생성:', names.length, '명');
     }
   }
@@ -628,7 +809,7 @@ function connectWebSocket(sessionCode) {
   const wsUrl = `${WS_BASE}/ws/${sessionCode}`;
   console.log('🔌 WebSocket 연결 중:', wsUrl);
   
-  wsManager = new WebSocketManager(sessionCode, avatarRenderer, WS_BASE);
+  wsManager = new WebSocketManager(sessionCode, avatarRenderer, WS_BASE, API_BASE);
   wsManager.connect();
   
   // 연결되면 즉시 문제 로드
@@ -727,16 +908,24 @@ function getDefaultProblem(type, grade) {
 }
 
 // 버튼 클릭 이벤트
-document.getElementById('btn-break').addEventListener('click', () => {
-  setMode('break');
-});
-
-document.getElementById('btn-class').addEventListener('click', () => {
-  setMode('class');
+const btnClassMode = document.getElementById('btn-classmode');
+btnClassMode.addEventListener('click', () => {
+  const currentMode = document.body.getAttribute('data-mode');
+  if (currentMode === 'break') {
+    setMode('class');
+  } else {
+    setMode('break');
+  }
 });
 
 document.getElementById('btn-work').addEventListener('click', () => {
-  setMode('work');
+  const currentMode = document.body.getAttribute('data-mode');
+  if (currentMode === 'work') {
+    // 업무 모드에서 다시 클릭하면 쉬는시간 모드로
+    setMode('break');
+  } else {
+    setMode('work');
+  }
 });
 
 // 우리반 관리 모달
@@ -761,17 +950,36 @@ resetBtn.addEventListener('click', () => {
   const confirmed = confirm('정말로 우리반 정보를 초기화하시겠습니까?\n\n모든 저장된 데이터(학교이름, 학년, 반, 학생이름 등)가 삭제됩니다.');
   
   if (confirmed) {
-    // localStorage 데이터 삭제
-    localStorage.removeItem('classData');
-    console.log('🗑️ 우리반 정보 초기화 완료');
+    // 교사별 localStorage 데이터 삭제
+    const teacherKey = getTeacherKey();
+    const storageKey = `classData_${teacherKey}`;
+    const timetableKey = `timetable_${teacherKey}`;
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(timetableKey);
+    console.log(`🗑️ [${teacherKey}] 우리반 정보 초기화 완료`);
     
-    // 폼 초기값으로 리셋
-    document.getElementById('school-name').value = '서울초등학교';
+    // 폼 초기값으로 리셋 (로그인한 교사의 학교 이름 유지)
+    const loginData = JSON.parse(localStorage.getItem('teacherLoginData'));
+    document.getElementById('school-name').value = loginData?.schoolName || '서울초등학교';
     document.getElementById('grade').value = '3';
     document.getElementById('class-number').value = '2';
     document.getElementById('student-count').value = '25';
     document.getElementById('student-names').value = '김철수\n이영희\n박민수\n정수현\n최지훈';
     document.getElementById('today-message').value = '오늘도 화이팅! 💪';
+    
+    // 시간표 입력 폼 초기화
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    days.forEach(day => {
+      for (let period = 1; period <= 6; period++) {
+        const input = document.getElementById(`${day}-${period}`);
+        if (input) {
+          input.value = '';
+        }
+      }
+    });
+    
+    // 시간표 위젯 업데이트
+    updateTimetableWidget();
     
     // 아바타 초기화
     avatarRenderer.clearAllAvatars();
@@ -811,16 +1019,24 @@ saveBtn.addEventListener('click', () => {
   
   console.log('💾 우리반 정보 저장:', classData);
   
-  // localStorage에 저장
+  // 교사별 localStorage에 저장
   try {
-    localStorage.setItem('classData', JSON.stringify(classData));
-    console.log('✅ localStorage에 저장 완료');
+    const teacherKey = getTeacherKey();
+    const storageKey = `classData_${teacherKey}`;
+    localStorage.setItem(storageKey, JSON.stringify(classData));
+    console.log(`✅ [${teacherKey}] localStorage에 저장 완료`);
   } catch (error) {
     console.error('❌ localStorage 저장 오류:', error);
   }
   
   // 화면 업데이트
   applyClassData(classData);
+  
+  // 시간표 저장
+  saveTimetable();
+  
+  // 시간표 위젯 업데이트
+  updateTimetableWidget();
   
   alert('우리반 정보가 저장되었습니다!');
   
@@ -836,59 +1052,59 @@ manageModal.addEventListener('click', (e) => {
   }
 });
 
-// 우리반 코드 모달
-const codeModal = document.getElementById('code-modal');
-const sessionCodeBtn = document.getElementById('session-code-btn');
-const codeModalClose = document.getElementById('code-modal-close');
-const modalSessionCode = document.getElementById('modal-session-code');
-const copyCodeBtn = document.getElementById('copy-code-btn');
-const closeCodeBtn = document.getElementById('close-code-btn');
+// 우리반 코드 모달 (UI 삭제됨 - 주석 처리)
+// const codeModal = document.getElementById('code-modal');
+// const sessionCodeBtn = document.getElementById('session-code-btn');
+// const codeModalClose = document.getElementById('code-modal-close');
+// const modalSessionCode = document.getElementById('modal-session-code');
+// const copyCodeBtn = document.getElementById('copy-code-btn');
+// const closeCodeBtn = document.getElementById('close-code-btn');
 
-sessionCodeBtn.addEventListener('click', () => {
-  // 현재 세션 코드를 모달에 복사
-  const currentCode = document.getElementById('session-code').textContent;
-  modalSessionCode.textContent = currentCode;
-  
-  codeModal.classList.add('active');
-  document.body.style.overflow = 'hidden';
-});
+// sessionCodeBtn.addEventListener('click', () => {
+//   // 현재 세션 코드를 모달에 복사
+//   const currentCode = document.getElementById('session-code').textContent;
+//   modalSessionCode.textContent = currentCode;
+//   
+//   codeModal.classList.add('active');
+//   document.body.style.overflow = 'hidden';
+// });
 
-codeModalClose.addEventListener('click', () => {
-  codeModal.classList.remove('active');
-  document.body.style.overflow = '';
-});
+// codeModalClose.addEventListener('click', () => {
+//   codeModal.classList.remove('active');
+//   document.body.style.overflow = '';
+// });
 
-closeCodeBtn.addEventListener('click', () => {
-  codeModal.classList.remove('active');
-  document.body.style.overflow = '';
-});
+// closeCodeBtn.addEventListener('click', () => {
+//   codeModal.classList.remove('active');
+//   document.body.style.overflow = '';
+// });
 
-copyCodeBtn.addEventListener('click', async () => {
-  const code = modalSessionCode.textContent;
-  try {
-    await navigator.clipboard.writeText(code);
-    copyCodeBtn.textContent = '✅ 복사됨!';
-    copyCodeBtn.style.background = '#45A049';
-    setTimeout(() => {
-      copyCodeBtn.textContent = '📋 복사하기';
-      copyCodeBtn.style.background = '#4CAF50';
-    }, 2000);
-  } catch (err) {
-    console.error('복사 실패:', err);
-    copyCodeBtn.textContent = '❌ 실패';
-    setTimeout(() => {
-      copyCodeBtn.textContent = '📋 복사하기';
-    }, 2000);
-  }
-});
+// copyCodeBtn.addEventListener('click', async () => {
+//   const code = modalSessionCode.textContent;
+//   try {
+//     await navigator.clipboard.writeText(code);
+//     copyCodeBtn.textContent = '✅ 복사됨!';
+//     copyCodeBtn.style.background = '#45A049';
+//     setTimeout(() => {
+//       copyCodeBtn.textContent = '📋 복사하기';
+//       copyCodeBtn.style.background = '#4CAF50';
+//     }, 2000);
+//   } catch (err) {
+//     console.error('복사 실패:', err);
+//     copyCodeBtn.textContent = '❌ 실패';
+//     setTimeout(() => {
+//       copyCodeBtn.textContent = '📋 복사하기';
+//     }, 2000);
+//   }
+// });
 
-// 코드 모달 외부 클릭 시 닫기
-codeModal.addEventListener('click', (e) => {
-  if (e.target === codeModal) {
-    codeModal.classList.remove('active');
-    document.body.style.overflow = '';
-  }
-});
+// 코드 모달 외부 클릭 시 닫기 (UI 삭제됨 - 주석 처리)
+// codeModal.addEventListener('click', (e) => {
+//   if (e.target === codeModal) {
+//     codeModal.classList.remove('active');
+//     document.body.style.overflow = '';
+//   }
+// });
 
 // 카드 모달 이벤트
 const cardModal = document.getElementById('card-modal');
@@ -1005,15 +1221,20 @@ document.getElementById('timer-decrease').addEventListener('click', () => {
 // 초기화
 console.log('🚀 교실 위젯 v0.4.0 시작');
 
-// localStorage에서 우리반 정보 불러오기
+// localStorage에서 우리반 정보 불러오기 및 적용
 const savedClassData = loadClassData();
 
-// 저장된 데이터가 없으면 기본 테스트 아바타 생성
-if (!savedClassData || !savedClassData.studentNames) {
+if (savedClassData && (savedClassData.studentNames || savedClassData.todayMessage)) {
+  // 저장된 데이터가 있으면 적용
+  console.log('✅ 저장된 우리반 데이터 적용');
+  applyClassData(savedClassData);
+} else {
+  // 저장된 데이터가 없으면 기본 테스트 아바타 생성
   console.log('📝 기본 테스트 아바타 생성');
   avatarRenderer.addAvatar(0, '테스트1');
   avatarRenderer.addAvatar(1, '테스트2');
   avatarRenderer.addAvatar(2, '테스트3');
+  avatarRenderer.setTeacher('우주 탐험을 시작합니다!');
 }
 
 // 리사이즈 핸들러
@@ -1113,3 +1334,424 @@ function testShowProblem() {
   
   console.log(`🧪 테스트 문제: [${randomProblem.type}] ${randomProblem.question}`);
 }
+
+// ========================================
+// 스톱워치 기능
+// ========================================
+const stopwatchDisplay = document.getElementById('stopwatch');
+const stopwatchStartBtn = document.getElementById('stopwatch-start-btn');
+const stopwatchResetBtn = document.getElementById('stopwatch-reset-btn');
+const stopwatchLapBtn = document.getElementById('stopwatch-lap-btn');
+const stopwatchLaps = document.getElementById('stopwatch-laps');
+
+let stopwatchInterval = null;
+let stopwatchTime = 0;
+let stopwatchRunning = false;
+let lapCounter = 1;
+
+function updateStopwatchDisplay() {
+  const minutes = Math.floor(stopwatchTime / 6000);
+  const seconds = Math.floor((stopwatchTime % 6000) / 100);
+  const centiseconds = stopwatchTime % 100;
+  
+  stopwatchDisplay.textContent = 
+    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`;
+}
+
+stopwatchStartBtn.addEventListener('click', () => {
+  if (!stopwatchRunning) {
+    // 시작
+    stopwatchRunning = true;
+    stopwatchStartBtn.querySelector('.stopwatch-btn-text').textContent = '일시정지';
+    stopwatchStartBtn.querySelector('.stopwatch-btn-icon').textContent = '⏸️';
+    
+    stopwatchInterval = setInterval(() => {
+      stopwatchTime++;
+      updateStopwatchDisplay();
+    }, 10);
+  } else {
+    // 일시정지
+    stopwatchRunning = false;
+    stopwatchStartBtn.querySelector('.stopwatch-btn-text').textContent = '시작';
+    stopwatchStartBtn.querySelector('.stopwatch-btn-icon').textContent = '▶️';
+    clearInterval(stopwatchInterval);
+  }
+});
+
+stopwatchResetBtn.addEventListener('click', () => {
+  stopwatchRunning = false;
+  stopwatchTime = 0;
+  lapCounter = 1;
+  clearInterval(stopwatchInterval);
+  updateStopwatchDisplay();
+  stopwatchStartBtn.querySelector('.stopwatch-btn-text').textContent = '시작';
+  stopwatchStartBtn.querySelector('.stopwatch-btn-icon').textContent = '▶️';
+  stopwatchLaps.innerHTML = '';
+});
+
+stopwatchLapBtn.addEventListener('click', () => {
+  if (stopwatchRunning) {
+    const lapItem = document.createElement('div');
+    lapItem.className = 'stopwatch-lap-item';
+    lapItem.textContent = `랩 ${lapCounter}: ${stopwatchDisplay.textContent}`;
+    stopwatchLaps.insertBefore(lapItem, stopwatchLaps.firstChild);
+    lapCounter++;
+  }
+});
+
+// ========================================
+// 판서 도구 기능
+// ========================================
+const boardCanvas = document.getElementById('board-canvas');
+const boardCtx = boardCanvas ? boardCanvas.getContext('2d') : null;
+
+if (boardCanvas && boardCtx) {
+  // 캔버스 크기 설정
+  function resizeBoardCanvas() {
+    const rect = boardCanvas.getBoundingClientRect();
+    boardCanvas.width = rect.width;
+    boardCanvas.height = rect.height;
+    
+    // 배경색 설정
+    boardCtx.fillStyle = '#2C3E50';
+    boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+  }
+  
+  // 초기 크기 설정
+  resizeBoardCanvas();
+  
+  // 그리기 상태
+  let isDrawing = false;
+  let currentTool = 'pen';
+  let currentColor = '#ffffff';
+  let currentSize = 3;
+  let lastX = 0;
+  let lastY = 0;
+  
+  // 도구 버튼
+  const penBtn = document.getElementById('pen-btn');
+  const eraserBtn = document.getElementById('eraser-btn');
+  const colorPicker = document.getElementById('color-picker');
+  const sizeSlider = document.getElementById('size-slider');
+  const clearBtn = document.getElementById('clear-btn');
+  const saveBtn = document.getElementById('save-btn');
+  
+  // 도구 선택
+  penBtn.addEventListener('click', () => {
+    currentTool = 'pen';
+    penBtn.classList.add('active');
+    eraserBtn.classList.remove('active');
+  });
+  
+  eraserBtn.addEventListener('click', () => {
+    currentTool = 'eraser';
+    eraserBtn.classList.add('active');
+    penBtn.classList.remove('active');
+  });
+  
+  colorPicker.addEventListener('change', (e) => {
+    currentColor = e.target.value;
+    currentTool = 'pen';
+    penBtn.classList.add('active');
+    eraserBtn.classList.remove('active');
+  });
+  
+  sizeSlider.addEventListener('input', (e) => {
+    currentSize = parseInt(e.target.value);
+  });
+  
+  clearBtn.addEventListener('click', () => {
+    if (confirm('판서 내용을 모두 지우시겠습니까?')) {
+      boardCtx.fillStyle = '#2C3E50';
+      boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    }
+  });
+  
+  saveBtn.addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = `판서_${new Date().toISOString().slice(0, 10)}.png`;
+    link.href = boardCanvas.toDataURL();
+    link.click();
+  });
+  
+  // 그리기 함수
+  function draw(x, y) {
+    if (!isDrawing) return;
+    
+    boardCtx.beginPath();
+    boardCtx.moveTo(lastX, lastY);
+    boardCtx.lineTo(x, y);
+    boardCtx.strokeStyle = currentTool === 'eraser' ? '#2C3E50' : currentColor;
+    boardCtx.lineWidth = currentTool === 'eraser' ? currentSize * 3 : currentSize;
+    boardCtx.lineCap = 'round';
+    boardCtx.lineJoin = 'round';
+    boardCtx.stroke();
+    
+    lastX = x;
+    lastY = y;
+  }
+  
+  // 마우스 이벤트
+  boardCanvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    const rect = boardCanvas.getBoundingClientRect();
+    lastX = e.clientX - rect.left;
+    lastY = e.clientY - rect.top;
+  });
+  
+  boardCanvas.addEventListener('mousemove', (e) => {
+    if (!isDrawing) return;
+    const rect = boardCanvas.getBoundingClientRect();
+    draw(e.clientX - rect.left, e.clientY - rect.top);
+  });
+  
+  boardCanvas.addEventListener('mouseup', () => {
+    isDrawing = false;
+  });
+  
+  boardCanvas.addEventListener('mouseleave', () => {
+    isDrawing = false;
+  });
+  
+  // 터치 이벤트
+  boardCanvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isDrawing = true;
+    const rect = boardCanvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    lastX = touch.clientX - rect.left;
+    lastY = touch.clientY - rect.top;
+  });
+  
+  boardCanvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!isDrawing) return;
+    const rect = boardCanvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    draw(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+  
+  boardCanvas.addEventListener('touchend', () => {
+    isDrawing = false;
+  });
+  
+  // 윈도우 리사이즈 시 캔버스 크기 조정
+  window.addEventListener('resize', () => {
+    if (document.body.getAttribute('data-mode') === 'class') {
+      resizeBoardCanvas();
+    }
+  });
+  
+  // 초기 도구 설정
+  penBtn.classList.add('active');
+}
+
+console.log('✅ 스톱워치 & 판서 도구 초기화 완료');
+
+// ========================================
+// 시간표 기능
+// ========================================
+
+// 시간표 데이터 저장
+function saveTimetable() {
+  const teacherKey = getTeacherKey();
+  const timetableKey = `timetable_${teacherKey}`;
+  
+  const timetable = {};
+  const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
+  
+  days.forEach(day => {
+    timetable[day] = [];
+    for (let period = 1; period <= 6; period++) {
+      const input = document.getElementById(`${day}-${period}`);
+      if (input) {
+        timetable[day].push(input.value.trim());
+      }
+    }
+  });
+  
+  localStorage.setItem(timetableKey, JSON.stringify(timetable));
+  console.log('✅ 시간표 저장 완료');
+}
+
+// 시간표 데이터 로드
+function loadTimetable() {
+  const teacherKey = getTeacherKey();
+  const timetableKey = `timetable_${teacherKey}`;
+  
+  const saved = localStorage.getItem(timetableKey);
+  if (!saved) return null;
+  
+  try {
+    const timetable = JSON.parse(saved);
+    
+    // 입력 폼에 데이터 채우기
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    days.forEach(day => {
+      if (timetable[day]) {
+        timetable[day].forEach((subject, index) => {
+          const input = document.getElementById(`${day}-${index + 1}`);
+          if (input) {
+            input.value = subject;
+          }
+        });
+      }
+    });
+    
+    console.log('✅ 시간표 로드 완료');
+    return timetable;
+  } catch (error) {
+    console.error('❌ 시간표 로드 오류:', error);
+    return null;
+  }
+}
+
+// 현재 요일과 교시 계산
+function getCurrentPeriod() {
+  const now = new Date();
+  const day = now.getDay(); // 0(일) ~ 6(토)
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  
+  // 주말은 null 반환
+  if (day === 0 || day === 6) {
+    return null;
+  }
+  
+  // 요일 변환 (1:월 ~ 5:금)
+  const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const dayName = dayNames[day];
+  const dayKorean = ['일', '월', '화', '수', '목', '금', '토'][day];
+  
+  // 교시 계산 (대략적인 시간)
+  // 1교시: 09:00-09:40
+  // 2교시: 09:50-10:30
+  // 3교시: 10:40-11:20
+  // 4교시: 11:30-12:10
+  // 점심: 12:10-13:10
+  // 5교시: 13:10-13:50
+  // 6교시: 14:00-14:40
+  
+  let period = 0;
+  const timeInMinutes = hour * 60 + minute;
+  
+  if (timeInMinutes >= 540 && timeInMinutes < 580) period = 1; // 09:00-09:40
+  else if (timeInMinutes >= 590 && timeInMinutes < 630) period = 2; // 09:50-10:30
+  else if (timeInMinutes >= 640 && timeInMinutes < 680) period = 3; // 10:40-11:20
+  else if (timeInMinutes >= 690 && timeInMinutes < 730) period = 4; // 11:30-12:10
+  else if (timeInMinutes >= 790 && timeInMinutes < 830) period = 5; // 13:10-13:50
+  else if (timeInMinutes >= 840 && timeInMinutes < 880) period = 6; // 14:00-14:40
+  
+  return {
+    day: dayName,
+    dayKorean: dayKorean,
+    period: period
+  };
+}
+
+// 시간표 위젯 업데이트
+function updateTimetableWidget() {
+  const timetableBody = document.getElementById('timetable-body');
+  const timetableDate = document.getElementById('timetable-date');
+  
+  if (!timetableBody || !timetableDate) return;
+  
+  const teacherKey = getTeacherKey();
+  const timetableKey = `timetable_${teacherKey}`;
+  const saved = localStorage.getItem(timetableKey);
+  
+  if (!saved) {
+    timetableBody.innerHTML = '<div class="timetable-empty">시간표를 등록해주세요</div>';
+    return;
+  }
+  
+  try {
+    const timetable = JSON.parse(saved);
+    const current = getCurrentPeriod();
+    
+    if (!current) {
+      timetableBody.innerHTML = '<div class="timetable-empty">주말입니다 🎉</div>';
+      timetableDate.textContent = '주말';
+      return;
+    }
+    
+    const daySchedule = timetable[current.day];
+    
+    if (!daySchedule || daySchedule.every(s => !s)) {
+      timetableBody.innerHTML = '<div class="timetable-empty">시간표를 등록해주세요</div>';
+      return;
+    }
+    
+    // 요일 표시
+    timetableDate.textContent = `${current.dayKorean}요일`;
+    
+    // 시간표 표시
+    let html = '';
+    daySchedule.forEach((subject, index) => {
+      if (subject) {
+        const periodNum = index + 1;
+        const isCurrent = periodNum === current.period;
+        html += `
+          <div class="timetable-period ${isCurrent ? 'current' : ''}">
+            <span class="period-number">${periodNum}교시</span>
+            <span class="period-subject">${subject}</span>
+          </div>
+        `;
+      }
+    });
+    
+    if (html) {
+      timetableBody.innerHTML = html;
+    } else {
+      timetableBody.innerHTML = '<div class="timetable-empty">시간표를 등록해주세요</div>';
+    }
+    
+  } catch (error) {
+    console.error('❌ 시간표 표시 오류:', error);
+    timetableBody.innerHTML = '<div class="timetable-empty">오류가 발생했습니다</div>';
+  }
+}
+
+// 초기 시간표 로드 및 위젯 업데이트
+loadTimetable();
+updateTimetableWidget();
+
+// 1분마다 시간표 위젯 업데이트
+setInterval(updateTimetableWidget, 60000);
+
+console.log('✅ 시간표 기능 초기화 완료');
+
+// ========================================
+// 타이머 토글 기능
+// ========================================
+const timerBtn = document.getElementById('btn-timer');
+const timerCard = document.getElementById('timer-card');
+
+if (timerBtn && timerCard) {
+  timerBtn.addEventListener('click', () => {
+    // 현재 모드 확인
+    const currentMode = document.body.getAttribute('data-mode');
+    
+    // 타이머가 실행 중이면 종료
+    if (isTimerRunning) {
+      pauseTimer();
+      return;
+    }
+    
+    // 수업시간 모드가 아닐 때만 타이머 카드 토글 가능
+    if (currentMode !== 'class') {
+      // 타이머가 보이는지 확인
+      if (timerCard.classList.contains('show')) {
+        // 숨기기
+        timerCard.classList.remove('show', 'overlay');
+        timerBtn.classList.remove('active');
+      } else {
+        // 보이기 (반투명 오버레이)
+        timerCard.classList.add('show', 'overlay');
+        timerBtn.classList.add('active');
+      }
+    }
+  });
+}
+
+console.log('✅ 타이머 토글 기능 초기화 완료');
