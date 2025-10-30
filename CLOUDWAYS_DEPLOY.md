@@ -2,7 +2,7 @@
 
 ## ✅ 자동 배포 (GitHub Hook 사용)
 
-현재 GitHub에 푸시했으므로, Cloudways에서 다음 방법으로 배포하세요:
+**중요**: Cloudways에서는 배포 스크립트를 **반드시** 실행해야 서버가 재시작됩니다!
 
 ### 방법 1: SSH로 수동 배포 (권장)
 
@@ -12,8 +12,11 @@
 
 ```bash
 cd ~/classkit
+git pull origin main
 bash deploy_classkit.sh
 ```
+
+**주의**: `git pull`만 하면 서버가 재시작되지 않아 "Service Unavailable" 오류가 발생합니다!
 
 ---
 
