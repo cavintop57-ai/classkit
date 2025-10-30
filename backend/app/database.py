@@ -13,6 +13,12 @@ SQL_ECHO = os.getenv("SQL_ECHO", "false").lower() == "true"
 # 우선순위: 환경변수 > Cloudways MySQL > SQLite (로컬 개발용)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Render.com PostgreSQL URL 변환
+if DATABASE_URL and (DATABASE_URL.startswith('postgresql://') or DATABASE_URL.startswith('postgres://')):
+    DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://', 1)
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql+asyncpg://', 1)
+    print(f"✅ PostgreSQL 사용 (Render.com)")
+
 if not DATABASE_URL:
     # Cloudways MySQL 자동 감지
     mysql_host = os.getenv("DB_HOST", "localhost")
