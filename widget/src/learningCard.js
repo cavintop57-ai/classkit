@@ -53,7 +53,11 @@ export class LearningCard {
     const index = typeIndex[problem.type];
     if (index !== undefined) {
       this.problems[index] = problem;
-      console.log(`📚 문제 ${index} 설정:`, problem.type, problem.question);
+      // 타입에 따라 표시할 내용 결정
+      const display = problem.type === 'vocabulary' ? problem.word : 
+                      problem.type === 'vocab' ? problem.word || problem.question : 
+                      problem.question;
+      console.log(`📚 문제 ${index} 설정:`, problem.type, display);
     } else {
       console.log(`❌ 알 수 없는 문제 타입: ${problem.type}`);
     }
