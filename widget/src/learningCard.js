@@ -541,6 +541,11 @@ export class LearningCard {
    * 텍스트 줄바꿈
    */
   wrapText(text, x, y, maxWidth, lineHeight) {
+    // undefined 또는 null 체크
+    if (!text) {
+      return;
+    }
+    
     const words = text.split(' ');
     let line = '';
     let lineY = y;
